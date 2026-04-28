@@ -41,7 +41,7 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
                     return (
                       <label
                         key={item.name}
-                        className="flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 bg-white text-[#13A699] border-[#FFD708]/20 hover:border-[#13A699]/40 hover:bg-[#FFF7ED]"
+                        className="flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 bg-white text-[#13A699] border-[#FFD708]/20 hover:border-[#13A699]/40"
                       >
                         <span className="text-2xl font-black uppercase tracking-tight">
                           {item.name}

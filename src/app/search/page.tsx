@@ -23,7 +23,6 @@ interface Teacher {
 function SearchContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
-  const router = useRouter();
   
   const initialSubject = searchParams.get("subject");
   
@@ -37,8 +36,6 @@ function SearchContent() {
     setLoading(true);
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
-    
-    // Server-side filtering for single subject
     if (selectedSubjects.length === 1) params.set("subject", selectedSubjects[0]);
 
     try {
@@ -47,7 +44,6 @@ function SearchContent() {
       const data = await res.json();
 
       let filtered = data;
-      // Safety check filtering logic
       if (selectedSubjects.length > 1) {
         filtered = data.filter((t: Teacher) =>
           selectedSubjects.some((s) => 
@@ -55,10 +51,9 @@ function SearchContent() {
           )
         );
       }
-
       setTeachers(filtered);
     } catch (err) {
-      console.error("Search Error:", err);
+      console.error(err);
       setTeachers([]);
     } finally {
       setLoading(false);
@@ -67,11 +62,6 @@ function SearchContent() {
 
   useEffect(() => {
     fetchTeachers();
-    if (selectedSubjects.length > 0 && resultsRef.current) {
-      setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 500);
-    }
   }, [selectedSubjects]);
 
   const renderStars = (rating: number) => {
@@ -91,7 +81,7 @@ function SearchContent() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="text-center mb-16">
         <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4 leading-none">
-          {selectedSubjects.length === 1 ? `Teachers for ${selectedSubjects[0]}` : "Find Your Expert"}
+          Find Your Expert
         </h1>
         <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4"></div>
       </div>
@@ -101,7 +91,7 @@ function SearchContent() {
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Search by teacher name or keyword..."
+              placeholder="Search by teacher name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-14 pr-6 py-5 rounded-[2rem] border-4 border-[#FFF7ED] focus:border-[#13A699] focus:outline-none bg-[#FFF7ED]/50 text-[#13A699] text-xl font-bold shadow-inner"
@@ -110,7 +100,7 @@ function SearchContent() {
           </div>
           <button
             onClick={fetchTeachers}
-            className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest hover:-translate-y-1 transform active:scale-95"
+            className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest"
           >
             Refine Search
           </button>
@@ -118,7 +108,7 @@ function SearchContent() {
 
         <div className="pt-8 border-t-4 border-[#FFD708]/5">
            <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-12 border-l-8 border-[#FFD708] pl-6">
-              Select Subjects:
+              Subject List:
            </h2>
           
            <SubjectSelector
@@ -126,28 +116,8 @@ function SearchContent() {
               onChange={(s) => setSelectedSubjects(s)}
               mode="multi"
            />
-
-           {selectedSubjects.length > 0 && (
-              <div className="mt-12 p-8 bg-[#13A699] rounded-[2.5rem] shadow-2xl animate-in zoom-in duration-300">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-white text-xl font-black uppercase tracking-widest">Active Selections:</h3>
-                  <button
-                    onClick={() => setSelectedSubjects([])}
-                    className="text-[#FFD708] text-sm font-black uppercase tracking-widest hover:underline"
-                  >
-                    Reset All
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {selectedSubjects.map((s) => (
-                    <span key={s} className="bg-white text-[#13A699] text-sm px-6 py-2 rounded-full flex items-center gap-3 font-black shadow-md uppercase">
-                      {s}
-                      <button onClick={() => setSelectedSubjects(selectedSubjects.filter((x) => x !== s))} className="hover:text-red-500 font-black text-xl">×</button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+           
+           {/* Completely removed the Teal Highlighted block from here */}
         </div>
       </div>
 
@@ -159,9 +129,8 @@ function SearchContent() {
           </div>
         ) : teachers.length === 0 ? (
           <div className="text-center py-32 bg-white rounded-[4rem] border-4 border-dashed border-[#FFD708]/30 shadow-inner">
-            <div className="text-6xl mb-6 opacity-30">🕵️</div>
             <p className="text-3xl font-black text-[#13A699]/40 uppercase tracking-tighter">
-              No results found for this selection yet.
+              No results found.
             </p>
           </div>
         ) : (
@@ -211,7 +180,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing...</div>}>
+    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing Marketplace...</div>}>
       <SearchContent />
     </Suspense>
   );
