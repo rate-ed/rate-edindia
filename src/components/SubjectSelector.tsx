@@ -31,7 +31,7 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
           <div className="space-y-4">
             {cat.subcategories.map((sub) => (
               <div key={sub.name}>
-                <h3 className="text-lg font-black text-[#13A699]/40 uppercase tracking-widest mb-6 ml-6">
+                <h3 className="text-lg font-black text-gray-400 uppercase tracking-widest mb-6 ml-6">
                   {sub.name}
                 </h3>
                 
@@ -41,16 +41,21 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
                     return (
                       <label
                         key={item.name}
-                        className="flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 bg-white border-[#FFD708]/30 hover:border-[#13A699]/30"
+                        className={`flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 ${
+                          isSelected
+                            ? "bg-[#FFF7ED] border-[#13A699] shadow-md"
+                            : "bg-white border-[#FFD708]/10 hover:border-[#13A699]/30"
+                        }`}
                       >
-                        <span className="text-xl md:text-2xl font-black text-[#13A699] uppercase tracking-tight">
+                        {/* Subject name is now Black, no teal highlight */}
+                        <span className="text-xl md:text-2xl font-black text-black uppercase tracking-tight">
                           {item.name}
                         </span>
                         
                         <div className="relative flex items-center">
                           <input
                             type="checkbox"
-                            className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/30 transition-all checked:bg-[#13A699] checked:border-[#13A699] focus:outline-none shadow-sm"
+                            className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/30 transition-all checked:bg-[#13A699] checked:border-[#13A699] focus:outline-none"
                             checked={isSelected}
                             onChange={() => toggle(item.name)}
                           />

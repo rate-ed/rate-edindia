@@ -22,6 +22,7 @@ interface Teacher {
 function SearchContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  
   const initialSubject = searchParams.get("subject");
   
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -32,29 +33,36 @@ function SearchContent() {
 
   const fetchTeachers = async () => {
     setLoading(true);
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("q", searchQuery);
-    
-    // We send current subjects to the API
-    if (selectedSubjects.length === 1) params.set("subject", selectedSubjects[0]);
-
+    // Fetch EVERYTHING then filter locally to guarantee results show up
     try {
-      const res = await fetch(`/api/teachers?${params}`);
-      if (!res.ok) throw new Error("Fetch failed");
+      const res = await fetch(`/api/teachers`);
+      if (!res.ok) throw new Error("Search failed");
       const data = await res.json();
 
       let filtered = data;
-      // Client-side multi-filter to be 100% sure we find the text
-      if (selectedSubjects.length > 1) {
-        filtered = data.filter((t: Teacher) =>
+
+      // 1. Keyword search
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter((t: Teacher) => 
+          t.user.name?.toLowerCase().includes(q) ||
+          t.bio?.toLowerCase().includes(q) ||
+          t.subjects?.toLowerCase().includes(q)
+        );
+      }
+
+      // 2. Subject filter
+      if (selectedSubjects.length > 0) {
+        filtered = filtered.filter((t: Teacher) =>
           selectedSubjects.some((s) => 
             t.subjects?.toLowerCase().includes(s.toLowerCase())
           )
         );
       }
+
       setTeachers(filtered);
     } catch (err) {
-      console.error(err);
+      console.error("Search Error:", err);
       setTeachers([]);
     } finally {
       setLoading(false);
@@ -63,11 +71,10 @@ function SearchContent() {
 
   useEffect(() => {
     fetchTeachers();
-    // Logic to scroll ONLY when a box is checked
     if (selectedSubjects.length > 0 && resultsRef.current) {
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 400);
+      }, 500);
     }
   }, [selectedSubjects]);
 
@@ -93,7 +100,7 @@ function SearchContent() {
         <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4"></div>
       </div>
 
-      <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl border border-[#FFD708]/30 mb-16">
+      <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-[#FFD708]/30 mb-16">
         <div className="flex flex-col md:flex-row gap-6 mb-16">
           <div className="flex-1 relative">
             <input
@@ -109,7 +116,7 @@ function SearchContent() {
             onClick={fetchTeachers}
             className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest"
           >
-            Refine Search
+            Update List
           </button>
         </div>
 
@@ -127,10 +134,15 @@ function SearchContent() {
       </div>
 
       <div ref={resultsRef} className="scroll-mt-32">
+        <div className="mb-10 flex justify-between items-end">
+           <h2 className="text-3xl font-black text-[#13A699] uppercase tracking-tight">Available Teachers</h2>
+           <p className="text-[#13A699] font-black uppercase text-sm bg-[#FFD708]/20 px-4 py-2 rounded-full border border-[#FFD708]/30">Found {teachers.length} Matches</p>
+        </div>
+
         {loading ? (
           <div className="text-center py-24">
             <div className="animate-spin rounded-full h-20 w-20 border-t-8 border-b-8 border-[#13A699] mx-auto"></div>
-            <p className="mt-8 text-[#13A699] font-black text-2xl uppercase tracking-widest animate-pulse">Updating results...</p>
+            <p className="mt-8 text-[#13A699] font-black text-2xl uppercase tracking-widest animate-pulse">Scanning Database...</p>
           </div>
         ) : teachers.length === 0 ? (
           <div className="text-center py-32 bg-white rounded-[4rem] border-4 border-dashed border-[#FFD708]/30 shadow-inner">
@@ -141,7 +153,7 @@ function SearchContent() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {teachers.map((teacher) => (
-              <Link href={`/book/${teacher.id}`} key={teacher.id} className="bg-white rounded-[3rem] p-10 shadow-2xl border-2 border-[#FFD708]/10 hover:border-[#13A699]/40 transition-all duration-500 group hover:-translate-y-3 flex flex-col">
+              <Link href={`/book/${teacher.id}`} key={teacher.id} className="bg-white rounded-[3rem] p-10 shadow-2xl border-2 border-[#FFD708]/10 hover:border-[#13A699]/40 transition-all duration-500 group hover:-translate-y-3 flex flex-col no-underline">
                 <div className="flex items-center gap-8 mb-8">
                   <div className="w-24 h-24 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-4 border-[#FFD708]/30 group-hover:scale-110 transition-transform duration-500">
                     {teacher.photo ? (
@@ -153,7 +165,7 @@ function SearchContent() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-black text-3xl text-[#13A699] truncate uppercase tracking-tight mb-2 group-hover:text-[#13A699] transition-colors">{teacher.user.name || "Teacher"}</h3>
+                    <h3 className="font-black text-3xl text-black truncate uppercase tracking-tight mb-2 group-hover:text-[#13A699] transition-colors">{teacher.user.name || "Teacher"}</h3>
                     <div className="flex items-center gap-1">
                       <span className="text-lg font-black text-[#FFD708]">{(teacher.rating || 0).toFixed(1)} ★</span>
                       <span className="text-xs text-gray-400 font-black ml-2 uppercase tracking-tighter">({teacher.ratingCount} reviews)</span>
@@ -161,12 +173,12 @@ function SearchContent() {
                   </div>
                 </div>
                 {teacher.bio && (
-                  <p className="text-[#13A699]/70 mb-8 line-clamp-4 text-xl leading-relaxed font-bold">{teacher.bio}</p>
+                  <p className="text-gray-600 mb-8 line-clamp-4 text-xl leading-relaxed font-medium no-underline">{teacher.bio}</p>
                 )}
                 <div className="flex items-center justify-between mt-auto pt-8 border-t-4 border-[#FFD708]/5">
                   <div className="flex flex-col">
-                    <span className="text-3xl font-black text-[#13A699]">₹{teacher.fees || 500}</span>
-                    <span className="text-xs font-black text-[#13A699]/40 uppercase tracking-widest mt-1">Per Hour</span>
+                    <span className="text-3xl font-black text-black">₹{teacher.fees || 500}</span>
+                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest mt-1">Per Hour</span>
                   </div>
                   <div className="bg-[#FFD708] text-[#13A699] font-black px-8 py-4 rounded-3xl text-lg group-hover:bg-[#FFD708]/80 transition-all shadow-xl uppercase transform group-hover:scale-105">
                     Book Demo
@@ -183,7 +195,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing...</div>}>
+    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing Marketplace...</div>}>
       <SearchContent />
     </Suspense>
   );
