@@ -15,7 +15,14 @@ async function main() {
   const u1 = await prisma.user.upsert({
     where: { email: "coding@test.com" },
     update: {},
-    create: { email: "coding@test.com", password: pass, name: "Arjun Mehta", role: "TEACHER", createdAt: new Date(), updatedAt: new Date() }
+    create: { 
+      email: "coding@test.com", 
+      password: pass, 
+      name: "Arjun Mehta", 
+      role: "TEACHER",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   });
   await prisma.teacherProfile.upsert({
     where: { userId: u1.id },
@@ -40,7 +47,14 @@ async function main() {
   const u2 = await prisma.user.upsert({
     where: { email: "math@test.com" },
     update: {},
-    create: { email: "math@test.com", password: pass, name: "Priya Sharma", role: "TEACHER", createdAt: new Date(), updatedAt: new Date() }
+    create: { 
+      email: "math@test.com", 
+      password: pass, 
+      name: "Priya Sharma", 
+      role: "TEACHER",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   });
   await prisma.teacherProfile.upsert({
     where: { userId: u2.id },
@@ -61,7 +75,7 @@ async function main() {
     }
   });
 
-  console.log("Sample teachers added to Supabase!");
+  console.log("--- Teachers added successfully ---");
   await prisma.$disconnect();
   await pool.end();
 }

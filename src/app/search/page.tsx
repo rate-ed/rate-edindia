@@ -22,7 +22,6 @@ interface Teacher {
 function SearchContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
-  
   const initialSubject = searchParams.get("subject");
   
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -33,15 +32,15 @@ function SearchContent() {
 
   const fetchTeachers = async () => {
     setLoading(true);
-    // Fetch EVERYTHING then filter locally to guarantee results show up
     try {
+      // Fetch all active teachers
       const res = await fetch(`/api/teachers`);
       if (!res.ok) throw new Error("Search failed");
-      const data = await res.json();
+      const allTeachers = await res.json();
 
-      let filtered = data;
+      let filtered = allTeachers;
 
-      // 1. Keyword search
+      // 1. Filter by Name/Keyword
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter((t: Teacher) => 
@@ -51,13 +50,15 @@ function SearchContent() {
         );
       }
 
-      // 2. Subject filter
+      // 2. Filter by selected subjects (OR logic)
       if (selectedSubjects.length > 0) {
-        filtered = filtered.filter((t: Teacher) =>
-          selectedSubjects.some((s) => 
-            t.subjects?.toLowerCase().includes(s.toLowerCase())
-          )
-        );
+        filtered = filtered.filter((t: Teacher) => {
+          if (!t.subjects) return false;
+          const teacherSubjects = t.subjects.toLowerCase().split(',').map(s => s.trim());
+          return selectedSubjects.some(s => 
+            teacherSubjects.some(ts => ts.includes(s.toLowerCase()) || s.toLowerCase().includes(ts))
+          );
+        });
       }
 
       setTeachers(filtered);
@@ -71,12 +72,13 @@ function SearchContent() {
 
   useEffect(() => {
     fetchTeachers();
+    // Smooth scroll when a filter is applied
     if (selectedSubjects.length > 0 && resultsRef.current) {
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 500);
     }
-  }, [selectedSubjects]);
+  }, [selectedSubjects, searchQuery]);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -94,36 +96,41 @@ function SearchContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="text-center mb-16">
-        <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4 leading-none">
+        <h1 className="text-5xl md:text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4 leading-none">
           Find Your Expert
         </h1>
-        <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4"></div>
+        <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4 shadow-sm"></div>
       </div>
 
-      <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-[#FFD708]/30 mb-16">
+      <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl border border-[#FFD708]/30 mb-16 overflow-hidden">
         <div className="flex flex-col md:flex-row gap-6 mb-16">
-          <div className="flex-1 relative">
+          <div className="flex-1 relative group">
             <input
               type="text"
-              placeholder="Search by teacher name..."
+              placeholder="Search by teacher name or skill..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 rounded-[2rem] border-4 border-[#FFF7ED] focus:border-[#13A699] focus:outline-none bg-[#FFF7ED]/50 text-[#13A699] text-xl font-bold shadow-inner"
+              className="w-full pl-14 pr-6 py-5 rounded-[2rem] border-4 border-[#FFF7ED] focus:border-[#13A699] focus:outline-none bg-[#FFF7ED]/50 text-[#13A699] text-xl font-bold shadow-inner transition-all"
             />
-            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
+            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl opacity-30 group-focus-within:opacity-100 transition-opacity">🔍</span>
           </div>
           <button
             onClick={fetchTeachers}
-            className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest"
+            className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/90 transition shadow-xl text-xl uppercase tracking-widest active:scale-95"
           >
-            Update List
+            Update Results
           </button>
         </div>
 
         <div className="pt-8 border-t-4 border-[#FFD708]/5">
-           <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-12 border-l-8 border-[#FFD708] pl-6">
-              Subject List:
-           </h2>
+           <div className="flex justify-between items-center mb-12">
+             <h2 className="text-3xl md:text-4xl font-black text-[#13A699] uppercase tracking-tighter border-l-8 border-[#FFD708] pl-6">
+                Subject List
+             </h2>
+             <p className="text-[#13A699] font-black text-sm bg-[#FFD708]/20 px-6 py-3 rounded-full border border-[#FFD708]/30 shadow-sm">
+                Found {teachers.length} Expert Matches
+             </p>
+           </div>
           
            <SubjectSelector
               selectedSubjects={selectedSubjects}
@@ -134,28 +141,33 @@ function SearchContent() {
       </div>
 
       <div ref={resultsRef} className="scroll-mt-32">
-        <div className="mb-10 flex justify-between items-end">
-           <h2 className="text-3xl font-black text-[#13A699] uppercase tracking-tight">Available Teachers</h2>
-           <p className="text-[#13A699] font-black uppercase text-sm bg-[#FFD708]/20 px-4 py-2 rounded-full border border-[#FFD708]/30">Found {teachers.length} Matches</p>
-        </div>
-
         {loading ? (
           <div className="text-center py-24">
             <div className="animate-spin rounded-full h-20 w-20 border-t-8 border-b-8 border-[#13A699] mx-auto"></div>
-            <p className="mt-8 text-[#13A699] font-black text-2xl uppercase tracking-widest animate-pulse">Scanning Database...</p>
+            <p className="mt-8 text-[#13A699] font-black text-2xl uppercase tracking-widest animate-pulse">Scanning Marketplace...</p>
           </div>
         ) : teachers.length === 0 ? (
           <div className="text-center py-32 bg-white rounded-[4rem] border-4 border-dashed border-[#FFD708]/30 shadow-inner">
-            <p className="text-3xl font-black text-[#13A699]/40 uppercase tracking-tighter">
-              No results found for selection yet.
+            <div className="text-6xl mb-6 opacity-30">🕵️</div>
+            <p className="text-3xl font-black text-[#13A699]/40 uppercase tracking-tighter max-w-md mx-auto">
+              No experts found for this selection yet.
             </p>
+            <button 
+              onClick={() => { setSelectedSubjects([]); setSearchQuery(""); }}
+              className="mt-8 text-[#13A699] font-black uppercase tracking-widest underline decoration-[#FFD708] decoration-4 underline-offset-4"
+            >
+              Clear all filters
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {teachers.map((teacher) => (
-              <Link href={`/book/${teacher.id}`} key={teacher.id} className="bg-white rounded-[3rem] p-10 shadow-2xl border-2 border-[#FFD708]/10 hover:border-[#13A699]/40 transition-all duration-500 group hover:-translate-y-3 flex flex-col no-underline">
-                <div className="flex items-center gap-8 mb-8">
-                  <div className="w-24 h-24 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-4 border-[#FFD708]/30 group-hover:scale-110 transition-transform duration-500">
+              <Link href={`/book/${teacher.id}`} key={teacher.id} className="bg-white rounded-[3rem] p-10 shadow-2xl border-2 border-[#FFD708]/10 hover:border-[#13A699]/40 transition-all duration-500 group hover:-translate-y-3 flex flex-col no-underline relative overflow-hidden">
+                {/* Visual Accent */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD708]/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+                
+                <div className="flex items-center gap-8 mb-8 relative z-10">
+                  <div className="w-24 h-24 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-4 border-[#FFD708]/30 group-hover:scale-110 transition-transform duration-500 shadow-md">
                     {teacher.photo ? (
                       <img src={teacher.photo} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -172,10 +184,12 @@ function SearchContent() {
                     </div>
                   </div>
                 </div>
+
                 {teacher.bio && (
-                  <p className="text-gray-600 mb-8 line-clamp-4 text-xl leading-relaxed font-medium no-underline">{teacher.bio}</p>
+                  <p className="text-gray-600 mb-8 line-clamp-4 text-xl leading-relaxed font-bold relative z-10 no-underline">{teacher.bio}</p>
                 )}
-                <div className="flex items-center justify-between mt-auto pt-8 border-t-4 border-[#FFD708]/5">
+
+                <div className="flex items-center justify-between mt-auto pt-8 border-t-4 border-[#FFD708]/5 relative z-10">
                   <div className="flex flex-col">
                     <span className="text-3xl font-black text-black">₹{teacher.fees || 500}</span>
                     <span className="text-xs font-black text-gray-400 uppercase tracking-widest mt-1">Per Hour</span>
