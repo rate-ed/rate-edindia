@@ -1,1 +1,1 @@
-activate clean ui final
+activate clean ui and teacher scan
