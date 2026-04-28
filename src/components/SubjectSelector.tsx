@@ -24,7 +24,6 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
     <div className="bg-white space-y-12">
       {SUBJECT_HIERARCHY.map((cat) => (
         <div key={cat.name} className="border-b-4 border-[#FFD708]/20 pb-12 last:border-b-0">
-          {/* Category Heading - Bold & Large */}
           <h2 className="font-black text-[#13A699] text-4xl uppercase tracking-tighter mb-10 border-l-8 border-[#FFD708] pl-6">
             {cat.name}
           </h2>
@@ -32,7 +31,6 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
           <div className="space-y-4">
             {cat.subcategories.map((sub) => (
               <div key={sub.name}>
-                {/* Subcategory - Smaller Bold Heading */}
                 <h3 className="text-xl font-black text-[#13A699]/60 uppercase tracking-widest mb-6 ml-6">
                   {sub.name}
                 </h3>
@@ -45,23 +43,23 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
                         key={item.name}
                         className={`flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 ${
                           isSelected
-                            ? "bg-[#13A699] text-white border-[#13A699] shadow-xl scale-[1.01]"
+                            ? "bg-white text-[#13A699] border-[#13A699] shadow-xl scale-[1.01]"
                             : "bg-white text-[#13A699] border-[#FFD708]/20 hover:border-[#13A699]/40 hover:bg-[#FFF7ED]"
                         }`}
                       >
-                        <span className="text-2xl font-black uppercase tracking-tight">
+                        <span className={`text-2xl font-black uppercase tracking-tight ${isSelected ? 'text-[#13A699]' : ''}`}>
                           {item.name}
                         </span>
                         
                         <div className="relative flex items-center">
                           <input
                             type="checkbox"
-                            className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/50 transition-all checked:bg-white checked:border-white focus:outline-none shadow-sm"
+                            className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/50 transition-all checked:bg-[#13A699] checked:border-[#13A699] focus:outline-none shadow-sm"
                             checked={isSelected}
                             onChange={() => toggle(item.name)}
                           />
                           <svg
-                            className="absolute h-7 w-7 pointer-events-none hidden peer-checked:block text-[#13A699] left-1.5"
+                            className="absolute h-7 w-7 pointer-events-none hidden peer-checked:block text-white left-1.5"
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             fill="none"
