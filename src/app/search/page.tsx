@@ -81,21 +81,19 @@ function SearchContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-black text-[#13A699] uppercase tracking-tighter mb-4">
-          {selectedSubjects.length === 1 ? `Experts in ${selectedSubjects[0]}` : "Discover Teachers"}
+      <div className="text-center mb-16">
+        <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4 leading-none">
+          {selectedSubjects.length === 1 ? `Experts in ${selectedSubjects[0]}` : "Find Your Mentor"}
         </h1>
-        <p className="text-[#13A699]/60 text-lg font-bold uppercase tracking-widest italic underline decoration-[#FFD708] decoration-4 underline-offset-8">
-          Specialized Coaching Marketplace
-        </p>
+        <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4"></div>
       </div>
 
-      <div className="bg-white rounded-[3rem] p-10 shadow-2xl border-4 border-[#FFD708]/10 mb-12">
+      <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-[#FFD708]/30 mb-16">
         <div className="flex flex-col md:flex-row gap-6 mb-16">
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Search by name or skill..."
+              placeholder="Search by teacher name or keyword..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-14 pr-6 py-5 rounded-[2rem] border-4 border-[#FFF7ED] focus:border-[#13A699] focus:outline-none bg-[#FFF7ED]/50 text-[#13A699] text-xl font-bold shadow-inner"
@@ -106,32 +104,31 @@ function SearchContent() {
             onClick={fetchTeachers}
             className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest hover:-translate-y-1 transform active:scale-95"
           >
-            Refresh List
+            Refine List
           </button>
         </div>
 
         <div className="pt-8 border-t-4 border-[#FFD708]/5">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="w-12 h-1.5 bg-[#FFD708] rounded-full"></div>
-            <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter">Subject Categories</h2>
-          </div>
+           <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-12 flex items-center gap-4">
+              Select Subjects:
+           </h2>
           
-          <div className="mt-8">
-            <SubjectSelector
+           {/* Direct list display - No more buttons or dropdowns */}
+           <SubjectSelector
               selectedSubjects={selectedSubjects}
               onChange={(s) => setSelectedSubjects(s)}
               mode="multi"
-            />
-            
-            {selectedSubjects.length > 0 && (
+           />
+
+           {selectedSubjects.length > 0 && (
               <div className="mt-12 p-8 bg-[#13A699] rounded-[2.5rem] shadow-2xl animate-in zoom-in duration-300">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-white text-xl font-black uppercase tracking-widest">Active Filters:</h3>
+                  <h3 className="text-white text-xl font-black uppercase tracking-widest">Active Selections:</h3>
                   <button
                     onClick={() => setSelectedSubjects([])}
                     className="text-[#FFD708] text-sm font-black uppercase tracking-widest hover:underline"
                   >
-                    Clear All
+                    Reset All
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -144,7 +141,6 @@ function SearchContent() {
                 </div>
               </div>
             )}
-          </div>
         </div>
       </div>
 
@@ -181,7 +177,7 @@ function SearchContent() {
                       <span className="text-lg font-black text-[#FFD708]">{(teacher.rating || 0).toFixed(1)} ★</span>
                       <span className="text-xs text-gray-400 font-black ml-2 uppercase tracking-tighter">({teacher.ratingCount} reviews)</span>
                     </div>
-                    <p className="text-sm font-black text-[#13A699]/50 mt-2 uppercase tracking-widest italic">📍 {teacher.location || "Verified"}</p>
+                    <p className="text-sm font-black text-[#13A699]/50 mt-2 uppercase tracking-widest italic">📍 {teacher.location || "Available"}</p>
                   </div>
                 </div>
 
