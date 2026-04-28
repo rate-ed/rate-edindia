@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import SubjectSelector from "@/components/SubjectSelector";
@@ -27,6 +27,7 @@ export default function SearchPage() {
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [locationFilter, setLocationFilter] = useState("");
   const [showSubjectPicker, setShowSubjectPicker] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const fetchTeachers = async () => {
     setLoading(true);
@@ -35,23 +36,34 @@ export default function SearchPage() {
     if (selectedSubjects.length === 1) params.set("subject", selectedSubjects[0]);
     if (locationFilter) params.set("location", locationFilter);
 
-    const res = await fetch(`/api/teachers?${params}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`/api/teachers?${params}`);
+      const data = await res.json();
 
-    let filtered = data;
-    if (selectedSubjects.length > 1) {
-      filtered = data.filter((t: Teacher) =>
-        selectedSubjects.some((s) => t.subjects?.includes(s))
-      );
+      let filtered = data;
+      if (selectedSubjects.length > 1) {
+        filtered = data.filter((t: Teacher) =>
+          selectedSubjects.some((s) => t.subjects?.includes(s))
+        );
+      }
+
+      setTeachers(filtered);
+    } catch (err) {
+      console.error(err);
     }
-
-    setTeachers(filtered);
     setLoading(false);
   };
 
+  // Auto-update when subjects change
   useEffect(() => {
     fetchTeachers();
-  }, []);
+    if (selectedSubjects.length > 0 && resultsRef.current) {
+      // Small delay to allow list to render
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
+    }
+  }, [selectedSubjects]);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -114,7 +126,7 @@ export default function SearchPage() {
           </button>
           
           {showSubjectPicker && (
-            <div className="mt-10 animate-in slide-in-from-top-4 duration-500">
+            <div className="mt-10">
               <SubjectSelector
                 selectedSubjects={selectedSubjects}
                 onChange={(s) => setSelectedSubjects(s)}
@@ -141,69 +153,58 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-24">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#13A699] mx-auto"></div>
-          <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Searching...</p>
-        </div>
-      ) : teachers.length === 0 ? (
-        <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-[#FFD708]/40 shadow-sm">
-          <p className="text-2xl font-black text-[#13A699]/40 uppercase tracking-tighter">No teachers found in our app yet.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {/* ... existing teacher card mapping ... */}
-          {teachers.map((teacher) => (
-            <div key={teacher.id} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-[#FFD708]/20 hover:border-[#13A699]/40 transition-all duration-300 group hover:-translate-y-2">
-              <div className="flex items-center gap-6 mb-6">
-                <div className="w-20 h-20 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-[#FFD708]/50 group-hover:scale-110 transition-transform">
-                  {teacher.photo ? (
-                    <img src={teacher.photo} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-3xl text-[#13A699] font-black uppercase">
-                      {teacher.user.name?.[0] || "T"}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-black text-2xl text-[#13A699] truncate uppercase tracking-tight">{teacher.user.name || "Teacher"}</h3>
-                  <div className="flex items-center gap-1 mt-1">
-                    {renderStars(teacher.rating)}
-                    <span className="text-xs text-gray-400 font-bold ml-1 uppercase">({teacher.ratingCount} reviews)</span>
+      <div ref={resultsRef} className="scroll-mt-32">
+        {loading ? (
+          <div className="text-center py-24">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#13A699] mx-auto"></div>
+            <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Updating Results...</p>
+          </div>
+        ) : teachers.length === 0 ? (
+          <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-[#FFD708]/40 shadow-sm">
+            <p className="text-2xl font-black text-[#13A699]/40 uppercase tracking-tighter">No teachers found for these filters yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {teachers.map((teacher) => (
+              <Link href={`/book/${teacher.id}`} key={teacher.id} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-[#FFD708]/20 hover:border-[#13A699]/40 transition-all duration-300 group hover:-translate-y-2 flex flex-col">
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="w-20 h-20 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-[#FFD708]/50 group-hover:scale-110 transition-transform">
+                    {teacher.photo ? (
+                      <img src={teacher.photo} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl text-[#13A699] font-black uppercase">
+                        {teacher.user.name?.[0] || "T"}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-sm font-bold text-[#13A699]/60 mt-1 uppercase tracking-wider italic">📍 {teacher.location || "Online"}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-black text-2xl text-[#13A699] truncate uppercase tracking-tight">{teacher.user.name || "Teacher"}</h3>
+                    <div className="flex items-center gap-1 mt-1">
+                      {renderStars(teacher.rating)}
+                      <span className="text-xs text-gray-400 font-bold ml-1 uppercase">({teacher.ratingCount} reviews)</span>
+                    </div>
+                    <p className="text-sm font-bold text-[#13A699]/60 mt-1 uppercase tracking-wider italic">📍 {teacher.location || "Online"}</p>
+                  </div>
                 </div>
-              </div>
 
-              {teacher.bio && (
-                <p className="text-[#13A699]/70 mb-6 line-clamp-3 text-lg leading-relaxed font-medium">{teacher.bio}</p>
-              )}
-
-              <div className="flex items-center justify-between mt-auto pt-6 border-t-2 border-[#FFD708]/10">
-                <div>
-                  <span className="text-2xl font-black text-[#13A699]">₹{teacher.fees || 500}</span>
-                  <span className="text-xs font-bold text-[#13A699]/50 uppercase ml-1">/hr</span>
-                </div>
-                {session ? (
-                  <Link
-                    href={`/book/${teacher.id}`}
-                    className="bg-[#FFD708] text-[#13A699] font-black px-6 py-3 rounded-2xl text-base hover:bg-[#FFD708]/80 transition shadow-md uppercase"
-                  >
-                    Book Demo
-                  </Link>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="bg-[#13A699] text-white font-black px-6 py-3 rounded-2xl text-sm hover:bg-[#13A699]/80 transition shadow-md uppercase"
-                  >
-                    Login to Book
-                  </Link>
+                {teacher.bio && (
+                  <p className="text-[#13A699]/70 mb-6 line-clamp-3 text-lg leading-relaxed font-medium">{teacher.bio}</p>
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+
+                <div className="flex items-center justify-between mt-auto pt-6 border-t-2 border-[#FFD708]/10">
+                  <div>
+                    <span className="text-2xl font-black text-[#13A699]">₹{teacher.fees || 500}</span>
+                    <span className="text-xs font-bold text-[#13A699]/50 uppercase ml-1">/hr</span>
+                  </div>
+                  <div className="bg-[#FFD708] text-[#13A699] font-black px-6 py-3 rounded-2xl text-base group-hover:bg-[#FFD708]/80 transition shadow-md uppercase">
+                    Book Demo
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
