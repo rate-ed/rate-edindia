@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import SubjectSelector from "@/components/SubjectSelector";
 
@@ -17,13 +17,11 @@ interface Teacher {
   location: string;
   photo: string | null;
   user: { name: string | null; email: string; image: string | null };
-  availability: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
 }
 
 function SearchContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
-  
   const initialSubject = searchParams.get("subject");
   
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -36,14 +34,17 @@ function SearchContent() {
     setLoading(true);
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
+    
+    // We send current subjects to the API
     if (selectedSubjects.length === 1) params.set("subject", selectedSubjects[0]);
 
     try {
       const res = await fetch(`/api/teachers?${params}`);
-      if (!res.ok) throw new Error("Search failed");
+      if (!res.ok) throw new Error("Fetch failed");
       const data = await res.json();
 
       let filtered = data;
+      // Client-side multi-filter to be 100% sure we find the text
       if (selectedSubjects.length > 1) {
         filtered = data.filter((t: Teacher) =>
           selectedSubjects.some((s) => 
@@ -62,6 +63,12 @@ function SearchContent() {
 
   useEffect(() => {
     fetchTeachers();
+    // Logic to scroll ONLY when a box is checked
+    if (selectedSubjects.length > 0 && resultsRef.current) {
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 400);
+    }
   }, [selectedSubjects]);
 
   const renderStars = (rating: number) => {
@@ -86,7 +93,7 @@ function SearchContent() {
         <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4"></div>
       </div>
 
-      <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-[#FFD708]/30 mb-16">
+      <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-2xl border border-[#FFD708]/30 mb-16">
         <div className="flex flex-col md:flex-row gap-6 mb-16">
           <div className="flex-1 relative">
             <input
@@ -116,8 +123,6 @@ function SearchContent() {
               onChange={(s) => setSelectedSubjects(s)}
               mode="multi"
            />
-           
-           {/* Completely removed the Teal Highlighted block from here */}
         </div>
       </div>
 
@@ -125,12 +130,12 @@ function SearchContent() {
         {loading ? (
           <div className="text-center py-24">
             <div className="animate-spin rounded-full h-20 w-20 border-t-8 border-b-8 border-[#13A699] mx-auto"></div>
-            <p className="mt-8 text-[#13A699] font-black text-2xl uppercase tracking-widest animate-pulse">Filtering Results...</p>
+            <p className="mt-8 text-[#13A699] font-black text-2xl uppercase tracking-widest animate-pulse">Updating results...</p>
           </div>
         ) : teachers.length === 0 ? (
           <div className="text-center py-32 bg-white rounded-[4rem] border-4 border-dashed border-[#FFD708]/30 shadow-inner">
             <p className="text-3xl font-black text-[#13A699]/40 uppercase tracking-tighter">
-              No results found.
+              No results found for selection yet.
             </p>
           </div>
         ) : (
@@ -155,11 +160,9 @@ function SearchContent() {
                     </div>
                   </div>
                 </div>
-
                 {teacher.bio && (
                   <p className="text-[#13A699]/70 mb-8 line-clamp-4 text-xl leading-relaxed font-bold">{teacher.bio}</p>
                 )}
-
                 <div className="flex items-center justify-between mt-auto pt-8 border-t-4 border-[#FFD708]/5">
                   <div className="flex flex-col">
                     <span className="text-3xl font-black text-[#13A699]">₹{teacher.fees || 500}</span>
@@ -180,7 +183,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing Marketplace...</div>}>
+    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing...</div>}>
       <SearchContent />
     </Suspense>
   );

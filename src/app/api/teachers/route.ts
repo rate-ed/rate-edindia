@@ -9,21 +9,20 @@ export async function GET(req: NextRequest) {
   const location = searchParams.get("location");
   const query = searchParams.get("q");
 
-  // Removed the strict approved: true filter so onboarded teachers show up immediately
   const where: any = {}; 
   
   if (subject) {
-    where.subjects = { contains: subject };
+    where.subjects = { contains: subject, mode: 'insensitive' };
   }
   if (location) {
-    where.location = { contains: location };
+    where.location = { contains: location, mode: 'insensitive' };
   }
   if (query) {
     where.OR = [
-      { subjects: { contains: query } },
-      { bio: { contains: query } },
-      { location: { contains: query } },
-      { user: { name: { contains: query } } },
+      { subjects: { contains: query, mode: 'insensitive' } },
+      { bio: { contains: query, mode: 'insensitive' } },
+      { location: { contains: query, mode: 'insensitive' } },
+      { user: { name: { contains: query, mode: 'insensitive' } } },
     ];
   }
 
