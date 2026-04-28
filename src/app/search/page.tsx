@@ -67,66 +67,72 @@ export default function SearchPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-[#13A699] mb-6">Find a Teacher</h1>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-4xl font-black text-[#13A699] mb-10 uppercase tracking-tight">Discover Teachers</h1>
 
-      <div className="bg-white rounded-2xl p-6 shadow-md border border-[#FFD708]/20 mb-6">
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
+      <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#FFD708]/30 mb-12">
+        {/* Search Row */}
+        <div className="flex flex-col md:flex-row gap-6 mb-12">
           <input
             type="text"
             placeholder="Search by name, skill, or keyword..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-xl border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
+            className="flex-1 px-6 py-4 rounded-2xl border-2 border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] text-lg font-medium"
           />
           <input
             type="text"
             placeholder="Location"
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
-            className="md:w-64 px-4 py-3 rounded-xl border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
+            className="md:w-64 px-6 py-4 rounded-2xl border-2 border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] text-lg font-medium"
           />
           <button
             onClick={fetchTeachers}
-            className="bg-[#FFD708] text-[#13A699] font-bold px-6 py-3 rounded-xl hover:bg-[#FFD708]/80 transition"
+            className="bg-[#FFD708] text-[#13A699] font-black px-10 py-4 rounded-2xl hover:bg-[#FFD708]/80 transition shadow-lg text-lg uppercase tracking-wider"
           >
             Search
           </button>
         </div>
 
-        <div>
+        {/* Filter Toggle Section */}
+        <div className="pt-4 border-t-2 border-[#FFD708]/10">
           <button
             type="button"
             onClick={() => setShowSubjectPicker(!showSubjectPicker)}
-            className="text-[#13A699] text-sm font-medium hover:underline flex items-center gap-1"
+            className="text-[#13A699] text-3xl font-black uppercase tracking-tighter hover:underline flex items-center gap-3 transition-all"
           >
-            {showSubjectPicker ? "▲ Hide" : "▼ Filter by"} Subject Category
+            <span className="bg-[#FFD708] text-white w-10 h-10 rounded-full flex items-center justify-center text-xl">
+              {showSubjectPicker ? "↑" : "↓"}
+            </span>
+            Filter by Subject Category
             {selectedSubjects.length > 0 && (
-              <span className="bg-[#13A699] text-white text-xs px-2 py-0.5 rounded-full ml-2">
+              <span className="bg-[#13A699] text-white text-lg px-4 py-1 rounded-full ml-4 shadow-md">
                 {selectedSubjects.length}
               </span>
             )}
           </button>
+          
           {showSubjectPicker && (
-            <div className="mt-3">
+            <div className="mt-10 animate-in slide-in-from-top-4 duration-500">
               <SubjectSelector
                 selectedSubjects={selectedSubjects}
                 onChange={(s) => setSelectedSubjects(s)}
                 mode="multi"
               />
               {selectedSubjects.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
+                <div className="mt-8 flex flex-wrap gap-2 p-6 bg-[#FFF7ED]/30 rounded-2xl border border-[#FFD708]/20">
                   {selectedSubjects.map((s) => (
-                    <span key={s} className="bg-[#13A699]/10 text-[#13A699] text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span key={s} className="bg-[#13A699] text-white text-sm px-4 py-2 rounded-full flex items-center gap-2 font-bold shadow-sm">
                       {s}
-                      <button onClick={() => setSelectedSubjects(selectedSubjects.filter((x) => x !== s))} className="hover:text-red-500">×</button>
+                      <button onClick={() => setSelectedSubjects(selectedSubjects.filter((x) => x !== s))} className="hover:text-red-300 font-black text-lg">×</button>
                     </span>
                   ))}
                   <button
                     onClick={() => { setSelectedSubjects([]); fetchTeachers(); }}
-                    className="text-xs text-red-400 hover:text-red-600 ml-2"
+                    className="text-sm font-black text-red-500 hover:text-red-700 ml-4 uppercase tracking-widest underline"
                   >
-                    Clear all
+                    Clear all filters
                   </button>
                 </div>
               )}
@@ -136,74 +142,59 @@ export default function SearchPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#13A699] mx-auto"></div>
+        <div className="text-center py-24">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#13A699] mx-auto"></div>
+          <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Searching...</p>
         </div>
       ) : teachers.length === 0 ? (
-        <div className="text-center py-12 text-[#13A699]/50">
-          <p className="text-lg">No teachers found. Try different search criteria.</p>
+        <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-[#FFD708]/40 shadow-sm">
+          <p className="text-2xl font-black text-[#13A699]/40 uppercase tracking-tighter">No teachers found in our app yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {/* ... existing teacher card mapping ... */}
           {teachers.map((teacher) => (
-            <div key={teacher.id} className="bg-white rounded-2xl p-6 shadow-md border border-[#FFD708]/20 hover:shadow-lg transition">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div key={teacher.id} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-[#FFD708]/20 hover:border-[#13A699]/40 transition-all duration-300 group hover:-translate-y-2">
+              <div className="flex items-center gap-6 mb-6">
+                <div className="w-20 h-20 bg-[#FFD708]/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-[#FFD708]/50 group-hover:scale-110 transition-transform">
                   {teacher.photo ? (
-                    <img src={teacher.photo} alt="" className="w-full h-full object-cover rounded-full" />
+                    <img src={teacher.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-2xl text-[#13A699] font-bold">
+                    <span className="text-3xl text-[#13A699] font-black uppercase">
                       {teacher.user.name?.[0] || "T"}
                     </span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-[#13A699] truncate">{teacher.user.name || "Teacher"}</h3>
+                  <h3 className="font-black text-2xl text-[#13A699] truncate uppercase tracking-tight">{teacher.user.name || "Teacher"}</h3>
                   <div className="flex items-center gap-1 mt-1">
                     {renderStars(teacher.rating)}
-                    <span className="text-xs text-gray-400 ml-1">({teacher.ratingCount})</span>
+                    <span className="text-xs text-gray-400 font-bold ml-1 uppercase">({teacher.ratingCount} reviews)</span>
                   </div>
-                  <p className="text-xs text-[#13A699]/60 mt-1">📍 {teacher.location}</p>
+                  <p className="text-sm font-bold text-[#13A699]/60 mt-1 uppercase tracking-wider italic">📍 {teacher.location || "Online"}</p>
                 </div>
               </div>
 
               {teacher.bio && (
-                <p className="text-sm text-[#13A699]/70 mb-3 line-clamp-2">{teacher.bio}</p>
+                <p className="text-[#13A699]/70 mb-6 line-clamp-3 text-lg leading-relaxed font-medium">{teacher.bio}</p>
               )}
 
-              {teacher.subjects && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {teacher.subjects.split(",").slice(0, 4).map((s) => (
-                    <span key={s} className="bg-[#FFD708]/20 text-[#13A699] text-xs px-2 py-0.5 rounded-full">
-                      {s.trim()}
-                    </span>
-                  ))}
-                  {teacher.subjects.split(",").length > 4 && (
-                    <span className="text-xs text-gray-400">+{teacher.subjects.split(",").length - 4} more</span>
-                  )}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#FFD708]/20">
+              <div className="flex items-center justify-between mt-auto pt-6 border-t-2 border-[#FFD708]/10">
                 <div>
-                  {teacher.experience && (
-                    <span className="text-xs text-[#13A699]/60">{teacher.experience} yrs exp</span>
-                  )}
-                  {teacher.fees && (
-                    <span className="text-sm font-bold text-[#13A699] ml-3">₹{teacher.fees}/hr</span>
-                  )}
+                  <span className="text-2xl font-black text-[#13A699]">₹{teacher.fees || 500}</span>
+                  <span className="text-xs font-bold text-[#13A699]/50 uppercase ml-1">/hr</span>
                 </div>
                 {session ? (
                   <Link
                     href={`/book/${teacher.id}`}
-                    className="bg-[#FFD708] text-[#13A699] font-bold px-4 py-2 rounded-lg text-sm hover:bg-[#FFD708]/80 transition"
+                    className="bg-[#FFD708] text-[#13A699] font-black px-6 py-3 rounded-2xl text-base hover:bg-[#FFD708]/80 transition shadow-md uppercase"
                   >
                     Book Demo
                   </Link>
                 ) : (
                   <Link
                     href="/login"
-                    className="bg-[#13A699] text-white font-medium px-4 py-2 rounded-lg text-sm hover:bg-[#13A699]/80 transition"
+                    className="bg-[#13A699] text-white font-black px-6 py-3 rounded-2xl text-sm hover:bg-[#13A699]/80 transition shadow-md uppercase"
                   >
                     Login to Book
                   </Link>
