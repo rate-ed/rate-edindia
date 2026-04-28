@@ -8,8 +8,8 @@ export default function Home() {
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#13A699]"><div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
-      <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#13A699]"></div>
+      </div>
     );
   }
 
@@ -17,14 +17,14 @@ export default function Home() {
     <div className="max-w-6xl mx-auto px-4 py-8 overflow-x-hidden">
       {/* Hero Section */}
       <div className="relative text-center mb-16 py-12">
-        <div className="absolute top-0 -left-10 w-40 h-40 bg-[#FFD708]/10 rounded-full blur-3xl -z-10"><div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
-        <div className="absolute bottom-0 -right-10 w-60 h-60 bg-[#13A699]/5 rounded-full blur-3xl -z-10"><div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+        <div className="absolute top-0 -left-10 w-40 h-40 bg-[#FFD708]/10 rounded-full blur-3xl -z-10"></div>
+        <div className="absolute bottom-0 -right-10 w-60 h-60 bg-[#13A699]/5 rounded-full blur-3xl -z-10"></div>
         
         <h1 className="text-4xl md:text-6xl font-black text-[#13A699] mb-6 leading-tight">
           Make Your Child <br/> 
           <span className="relative inline-block">
             Skill Independent
-            <div className="absolute -bottom-2 left-0 w-full h-2 bg-[#FFD708] rounded-full"><div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+            <div className="absolute -bottom-2 left-0 w-full h-2 bg-[#FFD708] rounded-full"></div>
           </span>
         </h1>
         <p className="text-[#13A699]/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium">
@@ -45,8 +45,8 @@ export default function Home() {
           >
             Explore Skills
           </Link>
-        <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
-      <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+        </div>
+      </div>
 
       {/* Graphical Step Section - Clickable and Scaled Down */}
       <div className="mb-24">
@@ -86,24 +86,24 @@ export default function Home() {
             <Link key={i} href={item.link} className="text-center group block p-4 rounded-3xl hover:bg-[#FFD708]/10 transition-colors">
               <div className="w-4 h-4 bg-[#FFD708] rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 {item.icon}
-              <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+              </div>
               <h3 className="text-[#13A699] font-black text-4xl mb-6 tracking-tight uppercase">{item.title}</h3>
               <p className="text-[#13A699]/60 text-lg leading-relaxed max-w-xs mx-auto font-medium">
                 {item.desc}
               </p>
             </Link>
           ))}
-        <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
-      <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+        </div>
+      </div>
 
       {/* Teacher CTA Section */}
       <div className="relative bg-[#13A699] rounded-[3rem] p-12 text-center shadow-2xl overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10"><div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10"></div>
         <h2 className="text-4xl font-black text-white mb-6 uppercase">Are you a Teacher?</h2>
         <p className="text-white/80 text-xl mb-6 max-w-xl mx-auto font-medium">
           Showcase your skills to parents and grow your teaching career with us.
         </p>
-      <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
-    <div className="text-[8px] text-gray-300 mt-10">v1.0.1-fixed</div></div>
+      </div>
+    </div>
   );
 }
