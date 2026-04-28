@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { SUBJECT_HIERARCHY } from "@/lib/subjects";
 
 interface SubjectSelectorProps {
@@ -9,9 +8,6 @@ interface SubjectSelectorProps {
 }
 
 export default function SubjectSelector({ selectedSubjects, onChange, mode = "multi" }: SubjectSelectorProps) {
-  const [expandedCat, setExpandedCat] = useState<string | null>(null);
-  const [expandedSub, setExpandedSub] = useState<string | null>(null);
-
   const toggle = (subject: string) => {
     if (mode === "single") {
       onChange([subject]);
@@ -25,70 +21,50 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
   };
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-xl border border-[#FFD708]/30">
+    <div className="space-y-12 bg-white p-2">
       {SUBJECT_HIERARCHY.map((cat) => (
-        <div key={cat.name} className="border-b-4 border-[#FFD708]/10 last:border-b-0">
-          <button
-            type="button"
-            onClick={() => setExpandedCat(expandedCat === cat.name ? null : cat.name)}
-            className="w-full px-8 py-10 flex justify-between items-center hover:bg-[#FFF7ED] transition-all group"
-          >
-            <span className="font-black text-[#13A699] text-4xl md:text-5xl uppercase tracking-tighter text-left leading-none">
-              {cat.name}
-            </span>
-            <svg
-              className={`w-2 h-2 text-[#13A699]/40 transition-transform duration-300 ${expandedCat === cat.name ? "rotate-180" : ""}`}
-              fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={6} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        <div key={cat.name} className="border-b-4 border-[#FFD708]/20 pb-12 last:border-b-0">
+          <h2 className="font-black text-[#13A699] text-5xl uppercase tracking-tighter mb-8 leading-none">
+            {cat.name}
+          </h2>
           
-          {expandedCat === cat.name && (
-            <div className="px-6 pb-8 animate-in slide-in-from-top-2 duration-300">
-              {cat.subcategories.map((sub) => (
-                <div key={sub.name} className="mt-4 border-2 border-[#FFD708]/20 rounded-[2rem] overflow-hidden bg-[#FFF7ED]/20">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedSub(expandedSub === `${cat.name}-${sub.name}` ? null : `${cat.name}-${sub.name}`)}
-                    className="w-full px-6 py-6 flex justify-between items-center hover:bg-[#FFD708]/10 transition-all"
-                  >
-                    <span className="text-2xl md:text-3xl font-black text-[#13A699]/90 uppercase tracking-tight text-left">
-                      {sub.name} <span className="text-xs text-gray-400 font-bold ml-2">[{sub.minAge}+]</span>
-                    </span>
-                    <svg
-                      className={`w-1.5 h-1.5 text-[#13A699]/30 transition-transform duration-300 ${expandedSub === `${cat.name}-${sub.name}` ? "rotate-180" : ""}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={6} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {expandedSub === `${cat.name}-${sub.name}` && (
-                    <div className="px-8 py-8 flex flex-wrap gap-4 bg-white border-t-2 border-[#FFD708]/10">
-                      {sub.items.map((item) => {
-                        const isSelected = selectedSubjects.includes(item.name);
-                        return (
-                          <button
-                            key={item.name}
-                            type="button"
-                            onClick={() => toggle(item.name)}
-                            className={`px-8 py-4 rounded-[1.5rem] text-xl font-black transition-all duration-200 shadow-sm ${
-                              isSelected
-                                ? "bg-[#13A699] text-white shadow-xl scale-110 ring-4 ring-[#13A699]/20"
-                                : "bg-[#FFD708]/10 text-[#13A699] border-2 border-[#FFD708]/30 hover:bg-[#FFD708]/30 hover:scale-105"
-                            }`}
-                          >
-                            {item.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
+          <div className="grid grid-cols-1 gap-10">
+            {cat.subcategories.map((sub) => (
+              <div key={sub.name} className="pl-4 border-l-4 border-[#FFD708]/30">
+                <h3 className="text-3xl font-black text-[#13A699]/90 uppercase tracking-tight mb-6 flex items-center gap-3">
+                  <span className="w-3 h-3 bg-[#FFD708] rounded-full"></span>
+                  {sub.name} 
+                  <span className="text-sm text-gray-400 font-bold ml-2">[{sub.minAge}+ Age]</span>
+                </h3>
+                
+                <div className="flex flex-wrap gap-4 pl-6">
+                  {sub.items.map((item) => {
+                    const isSelected = selectedSubjects.includes(item.name);
+                    return (
+                      <label
+                        key={item.name}
+                        className={`flex items-center gap-3 px-8 py-4 rounded-[1.5rem] cursor-pointer transition-all duration-200 border-2 ${
+                          isSelected
+                            ? "bg-[#13A699] text-white border-[#13A699] shadow-2xl scale-110 ring-4 ring-[#13A699]/10"
+                            : "bg-[#FFF7ED]/50 text-[#13A699] border-[#FFD708]/40 hover:bg-[#FFD708]/20 hover:scale-105"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="w-6 h-6 rounded-lg border-[#FFD708] text-[#13A699] focus:ring-[#13A699] cursor-pointer"
+                          checked={isSelected}
+                          onChange={() => toggle(item.name)}
+                        />
+                        <span className="text-2xl font-black uppercase tracking-tight">
+                          {item.name}
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>
