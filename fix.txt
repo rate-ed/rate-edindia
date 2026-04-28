@@ -1,1 +1,1 @@
-final subject design
+activate mandatory checks and slot limits
