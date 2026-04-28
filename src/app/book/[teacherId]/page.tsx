@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
-import { SUBJECT_HIERARCHY } from "@/lib/subjects";
 
 interface TeacherData {
   id: string;
@@ -13,6 +12,7 @@ interface TeacherData {
   rating: number;
   subjects: string | null;
   location: string;
+  photo: string | null;
   user: { name: string | null; email: string };
   availability: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
 }
@@ -38,7 +38,8 @@ export default function BookPage() {
   }, [status, router]);
 
   useEffect(() => {
-    fetch(`/api/teachers?all=1`)
+    // Explicitly fetch all teachers including availability
+    fetch(`/api/teachers`)
       .then((r) => r.json())
       .then((data: TeacherData[]) => {
         const t = data.find((t) => t.id === teacherId);
@@ -59,8 +60,10 @@ export default function BookPage() {
     });
 
     const booking = await res.json();
-    setBookingId(booking.id);
-    setBooked(true);
+    if (booking.id) {
+      setBookingId(booking.id);
+      setBooked(true);
+    }
     setLoading(false);
   };
 
@@ -76,7 +79,6 @@ export default function BookPage() {
 
     const data = await res.json();
 
-    // Simulate Razorpay test mode payment
     const confirmed = window.confirm(
       `Razorpay Test Mode\n\nAmount: ₹${amount}\nOrder ID: ${data.orderId}\n\nClick OK to simulate successful payment.`
     );
@@ -108,133 +110,126 @@ export default function BookPage() {
   const teacherSubjects = teacher.subjects?.split(",").map((s) => s.trim()) || [];
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-[#13A699] mb-6">Book a Demo Class</h1>
+    <div className="max-w-2xl mx-auto py-8 px-4">
+      <h1 className="text-3xl font-black text-[#13A699] mb-8 uppercase tracking-tight">Book Demo Class</h1>
 
-      <div className="bg-white rounded-2xl p-6 shadow-md border border-[#FFD708]/20 mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 bg-[#FFD708]/20 rounded-full flex items-center justify-center">
-            <span className="text-2xl text-[#13A699] font-bold">{teacher.user.name?.[0] || "T"}</span>
+      <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#FFD708]/20 mb-8">
+        <div className="flex items-center gap-6 mb-6">
+          <div className="w-20 h-20 bg-[#FFD708]/20 rounded-full flex items-center justify-center overflow-hidden border-2 border-[#FFD708]">
+            {teacher.photo ? (
+               <img src={teacher.photo} alt="" className="w-full h-full object-cover" />
+            ) : (
+               <span className="text-3xl text-[#13A699] font-bold">{teacher.user.name?.[0] || "T"}</span>
+            )}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-[#13A699]">{teacher.user.name}</h2>
-            <p className="text-sm text-[#13A699]/60">📍 {teacher.location}</p>
-            {teacher.fees && <p className="text-sm font-semibold text-[#13A699]">₹{teacher.fees}/hr</p>}
+            <h2 className="text-2xl font-bold text-[#13A699]">{teacher.user.name}</h2>
+            {teacher.fees && <p className="text-xl font-black text-[#13A699]">₹{teacher.fees}/hr</p>}
+            <p className="text-sm text-[#13A699]/60">📍 {teacher.location || "Location not set"}</p>
           </div>
         </div>
 
-        {teacher.bio && <p className="text-sm text-[#13A699]/70 mb-3">{teacher.bio}</p>}
-        {teacher.qualifications && (
-          <p className="text-sm text-[#13A699]/60 mb-2">
-            <strong>Qualifications:</strong> {teacher.qualifications}
-          </p>
-        )}
-
-        {teacher.availability.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-bold text-[#13A699] mb-2">Available Slots:</h3>
-            <div className="flex flex-wrap gap-2">
+        {/* Schedule Section */}
+        <div className="bg-[#FFF7ED] rounded-2xl p-6 border border-[#FFD708]/30 mb-6">
+          <h3 className="text-lg font-bold text-[#13A699] mb-4 uppercase tracking-wide">Teacher's Schedule</h3>
+          {teacher.availability && teacher.availability.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {teacher.availability.map((a, i) => (
-                <span key={i} className="bg-[#FFD708]/20 text-[#13A699] text-xs px-3 py-1 rounded-full">
-                  {dayNames[a.dayOfWeek]} {a.startTime}-{a.endTime}
-                </span>
+                <div key={i} className="bg-white px-4 py-2 rounded-xl border border-[#FFD708]/50 flex justify-between items-center shadow-sm">
+                  <span className="font-bold text-[#13A699] text-sm">{dayNames[a.dayOfWeek]}</span>
+                  <span className="text-[#13A699]/70 text-xs font-medium">{a.startTime} - {a.endTime}</span>
+                </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-[#13A699]/50 text-sm italic">This teacher hasn't set their available slots yet.</p>
+          )}
+        </div>
+
+        {teacher.bio && <p className="text-[#13A699]/70 leading-relaxed mb-4">{teacher.bio}</p>}
       </div>
 
       {!booked ? (
-        <form onSubmit={handleBook} className="bg-white rounded-2xl p-6 shadow-md border border-[#FFD708]/20">
-          <div className="space-y-4">
+        <form onSubmit={handleBook} className="bg-white rounded-3xl p-8 shadow-xl border border-[#FFD708]/20">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[#13A699] mb-1">Subject</label>
+              <label className="block text-sm font-bold text-[#13A699] mb-2 uppercase">Subject</label>
               <select
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
+                className="w-full px-4 py-3 rounded-xl border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] font-medium"
                 required
               >
                 <option value="">Select a subject</option>
-                {teacherSubjects.length > 0 ? (
-                  teacherSubjects.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))
-                ) : (
-                  SUBJECT_HIERARCHY.map((cat) =>
-                    cat.subcategories.map((sub) =>
-                      sub.items.map((item) => (
-                        <option key={`${cat.name}-${item.name}`} value={item.name}>
-                          {cat.name} → {sub.name} → {item.name}
-                        </option>
-                      ))
-                    )
-                  )
-                )}
+                {teacherSubjects.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#13A699] mb-1">Preferred Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full px-4 py-2 rounded-lg border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
-                required
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-[#13A699] mb-2 uppercase">Preferred Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full px-4 py-3 rounded-xl border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-[#13A699] mb-2 uppercase">Preferred Time</label>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
+                  required
+                />
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#13A699] mb-1">Preferred Time</label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699]"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#13A699] mb-1">Notes (optional)</label>
+              <label className="block text-sm font-bold text-[#13A699] mb-2 uppercase">Notes</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-2 rounded-lg border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] resize-none"
-                placeholder="Any special requirements or questions..."
+                className="w-full px-4 py-3 rounded-xl border border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] resize-none"
+                placeholder="Message for the teacher..."
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FFD708] text-[#13A699] font-bold py-3 rounded-xl hover:bg-[#FFD708]/80 transition disabled:opacity-50"
+              className="w-full bg-[#FFD708] text-[#13A699] font-black py-4 rounded-2xl hover:bg-[#FFD708]/80 transition disabled:opacity-50 uppercase shadow-lg text-lg"
             >
-              {loading ? "Booking..." : "Book Demo Class"}
+              {loading ? "Processing..." : "Confirm Booking"}
             </button>
           </div>
         </form>
       ) : (
-        <div className="bg-white rounded-2xl p-6 shadow-md border border-[#FFD708]/20 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <div className="bg-white rounded-3xl p-10 shadow-2xl border border-[#FFD708]/20 text-center animate-in zoom-in duration-300">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-200">
+            <svg className="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-[#13A699] mb-2">Booking Submitted!</h2>
-          <p className="text-[#13A699]/60 mb-6">Your demo class request has been sent to the teacher.</p>
-          <div className="flex gap-3 justify-center">
+          <h2 className="text-3xl font-black text-[#13A699] mb-4 uppercase tracking-tight">Success!</h2>
+          <p className="text-[#13A699]/60 text-lg mb-8">Your booking request has been sent.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={handlePayment}
               disabled={paying}
-              className="bg-[#FFD708] text-[#13A699] font-bold px-6 py-3 rounded-xl hover:bg-[#FFD708]/80 transition disabled:opacity-50"
+              className="bg-[#FFD708] text-[#13A699] font-black px-10 py-4 rounded-2xl hover:bg-[#FFD708]/80 transition disabled:opacity-50 uppercase shadow-lg"
             >
               {paying ? "Processing..." : `Pay ₹${teacher.fees || 500}`}
             </button>
             <button
               onClick={() => router.push("/dashboard/parent")}
-              className="bg-[#13A699] text-white font-medium px-6 py-3 rounded-xl hover:bg-[#13A699]/80 transition"
+              className="bg-[#13A699] text-white font-black px-10 py-4 rounded-2xl hover:bg-[#13A699]/80 transition uppercase shadow-lg"
             >
-              Go to Dashboard
+              Dashboard
             </button>
           </div>
         </div>
