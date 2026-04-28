@@ -16,10 +16,10 @@ export interface Category {
 
 export const SUBJECT_HIERARCHY: Category[] = [
   {
-    name: "Career Skills",
+    name: "Career Skills (Digital & Tech)",
     subcategories: [
       {
-        name: "Digital & Tech",
+        name: "Skill Examples",
         minAge: 9,
         items: [
           { name: "Coding", minAge: 9 },
@@ -33,9 +33,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Data Analytics", minAge: 9 },
           { name: "Cybersecurity", minAge: 9 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Career Skills (Creative & Media)",
+    subcategories: [
       {
-        name: "Creative & Media",
+        name: "Skill Examples",
         minAge: 12,
         items: [
           { name: "Graphic Design", minAge: 12 },
@@ -45,9 +50,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Animation", minAge: 12 },
           { name: "Podcasting", minAge: 12 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Career Skills (Business & Entrepreneurship)",
+    subcategories: [
       {
-        name: "Business & Entrepreneurship",
+        name: "Skill Examples",
         minAge: 13,
         items: [
           { name: "Freelancing", minAge: 13 },
@@ -55,9 +65,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "E-commerce", minAge: 13 },
           { name: "Digital Marketing", minAge: 13 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Career Skills (Skilled Trades & Services)",
+    subcategories: [
       {
-        name: "Skilled Trades & Services",
+        name: "Skill Examples",
         minAge: 10,
         items: [
           { name: "Baking", minAge: 10 },
@@ -66,9 +81,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Interior Basics", minAge: 10 },
           { name: "Event Planning", minAge: 10 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Career Skills (Finance & Career Readiness)",
+    subcategories: [
       {
-        name: "Finance & Career Readiness",
+        name: "Skill Examples",
         minAge: 15,
         items: [
           { name: "Personal Finance", minAge: 15 },
@@ -76,14 +96,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Resume", minAge: 15 },
           { name: "Interview Skills", minAge: 15 },
         ],
-      },
+      }
     ],
   },
   {
-    name: "Activities",
+    name: "Activities (Communication & Personality)",
     subcategories: [
       {
-        name: "Communication & Personality",
+        name: "Skill Examples",
         minAge: 6,
         items: [
           { name: "Public Speaking", minAge: 6 },
@@ -91,9 +111,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Storytelling", minAge: 6 },
           { name: "Leadership", minAge: 6 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Activities (Performing Arts)",
+    subcategories: [
       {
-        name: "Performing Arts",
+        name: "Skill Examples",
         minAge: 5,
         items: [
           { name: "Dance", minAge: 5 },
@@ -101,9 +126,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Acting", minAge: 5 },
           { name: "Instruments", minAge: 5 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Activities (Creative Arts)",
+    subcategories: [
       {
-        name: "Creative Arts",
+        name: "Skill Examples",
         minAge: 5,
         items: [
           { name: "Drawing", minAge: 5 },
@@ -111,9 +141,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Digital Art", minAge: 5 },
           { name: "DIY Crafts", minAge: 5 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Activities (Cognitive & Enrichment)",
+    subcategories: [
       {
-        name: "Cognitive & Enrichment",
+        name: "Skill Examples",
         minAge: 6,
         items: [
           { name: "Chess", minAge: 6 },
@@ -121,23 +156,28 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Memory Training", minAge: 6 },
           { name: "Writing", minAge: 6 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Activities (Life Skills)",
+    subcategories: [
       {
-        name: "Life Skills",
+        name: "Skill Examples",
         minAge: 8,
         items: [
           { name: "Time Management", minAge: 8 },
           { name: "Emotional Intelligence", minAge: 8 },
           { name: "Etiquette", minAge: 8 },
         ],
-      },
+      }
     ],
   },
   {
-    name: "Sports",
+    name: "Sports (Team Sports)",
     subcategories: [
       {
-        name: "Team Sports",
+        name: "Skill Examples",
         minAge: 6,
         items: [
           { name: "Football", minAge: 6 },
@@ -145,9 +185,14 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Basketball", minAge: 6 },
           { name: "Volleyball", minAge: 6 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Sports (Individual Sports)",
+    subcategories: [
       {
-        name: "Individual Sports",
+        name: "Skill Examples",
         minAge: 6,
         items: [
           { name: "Tennis", minAge: 6 },
@@ -155,18 +200,28 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Swimming", minAge: 6 },
           { name: "Athletics", minAge: 6 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Sports (Fitness & Discipline)",
+    subcategories: [
       {
-        name: "Fitness & Discipline",
+        name: "Skill Examples",
         minAge: 8,
         items: [
           { name: "Martial Arts", minAge: 8 },
           { name: "Yoga", minAge: 8 },
           { name: "Gym Training", minAge: 8 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Sports (Niche Sports)",
+    subcategories: [
       {
-        name: "Niche Sports",
+        name: "Skill Examples",
         minAge: 10,
         items: [
           { name: "Golf", minAge: 10 },
@@ -174,23 +229,28 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Archery", minAge: 10 },
           { name: "Shooting", minAge: 10 },
         ],
-      },
+      }
     ],
   },
   {
-    name: "Development & Wellness",
+    name: "Development & Wellness (Child Development)",
     subcategories: [
       {
-        name: "Child Development",
+        name: "Skill Examples",
         minAge: 3,
         items: [
           { name: "Speech Therapy", minAge: 3 },
           { name: "Occupational Therapy", minAge: 3 },
           { name: "Special Education", minAge: 3 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Development & Wellness (Mental Wellness)",
+    subcategories: [
       {
-        name: "Mental Wellness",
+        name: "Skill Examples",
         minAge: 12,
         items: [
           { name: "Counseling", minAge: 12 },
@@ -198,46 +258,61 @@ export const SUBJECT_HIERARCHY: Category[] = [
           { name: "Anxiety", minAge: 12 },
           { name: "Support", minAge: 12 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Development & Wellness (Special Needs Support)",
+    subcategories: [
       {
-        name: "Special Needs Support",
+        name: "Skill Examples",
         minAge: 3,
         items: [
           { name: "Autism Support", minAge: 3 },
           { name: "Learning Disabilities", minAge: 3 },
         ],
-      },
+      }
     ],
   },
   {
-    name: "Hobbies",
+    name: "Hobbies (Hobby Skills)",
     subcategories: [
       {
-        name: "Hobby Skills",
+        name: "Skill Examples",
         minAge: 5,
         items: [
           { name: "Gardening", minAge: 5 },
           { name: "DIY Crafts", minAge: 5 },
           { name: "Casual Photography", minAge: 5 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Hobbies (Lifestyle Skills)",
+    subcategories: [
       {
-        name: "Lifestyle Skills",
+        name: "Skill Examples",
         minAge: 8,
         items: [
           { name: "Cooking", minAge: 8 },
           { name: "Baking", minAge: 8 },
           { name: "Home Organization", minAge: 8 },
         ],
-      },
+      }
+    ],
+  },
+  {
+    name: "Hobbies (Exploration)",
+    subcategories: [
       {
-        name: "Exploration",
+        name: "Skill Examples",
         minAge: 8,
         items: [
           { name: "Language Learning", minAge: 8 },
           { name: "Travel Skills", minAge: 8 },
         ],
-      },
+      }
     ],
   },
   {
