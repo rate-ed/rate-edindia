@@ -1,1 +1,1 @@
-activate clean ui no highlights
+activate clean ui final
