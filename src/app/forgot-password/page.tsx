@@ -5,10 +5,23 @@ import Link from "next/link";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("If an account exists for ${email}, a password reset link has been sent.");
+    setLoading(true);
+    
+    try {
+      await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setMessage("Check your inbox! If an account exists for " + email + ", we've sent a link.");
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -20,7 +33,7 @@ export default function ForgotPasswordPage() {
           <div className="bg-green-50 text-green-700 px-4 py-2 rounded-lg mb-6 text-sm">{message}</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-sm text-[#13A699]/60 mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+            <p className="text-sm text-[#13A699]/60 mb-4">Enter your email address and we'll send you a link to your account.</p>
             <input
               type="email"
               value={email}
@@ -31,9 +44,10 @@ export default function ForgotPasswordPage() {
             />
             <button
               type="submit"
-              className="w-full bg-[#FFD708] text-[#13A699] font-bold py-3 rounded-xl hover:bg-[#FFD708]/80 transition uppercase"
+              disabled={loading}
+              className="w-full bg-[#FFD708] text-[#13A699] font-bold py-3 rounded-xl hover:bg-[#FFD708]/80 transition uppercase disabled:opacity-50"
             >
-              Send Reset Link
+              {loading ? "Sending..." : "Send Reset Link"}
             </button>
           </form>
         )}
