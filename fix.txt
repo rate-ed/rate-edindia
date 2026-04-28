@@ -1,1 +1,1 @@
-activate clean ui and teacher scan
+activate live results v4
