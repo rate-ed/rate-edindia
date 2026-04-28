@@ -23,3 +23,4 @@ export const prisma = globalForPrisma.prisma || createPrismaClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;
+// Force redeploy Tue Apr 28 08:20:35 UTC 2026
