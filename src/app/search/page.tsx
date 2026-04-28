@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import SubjectSelector from "@/components/SubjectSelector";
+import { SUBJECT_HIERARCHY } from "@/lib/subjects";
 
 interface Teacher {
   id: string;
@@ -66,6 +66,14 @@ function SearchContent() {
     }
   }, [selectedSubjects]);
 
+  const toggleSubject = (subject: string) => {
+    if (selectedSubjects.includes(subject)) {
+      setSelectedSubjects(selectedSubjects.filter((s) => s !== subject));
+    } else {
+      setSelectedSubjects([...selectedSubjects, subject]);
+    }
+  };
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <svg
@@ -83,17 +91,20 @@ function SearchContent() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="text-center mb-16">
         <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4 leading-none">
-          {selectedSubjects.length === 1 ? `Experts in ${selectedSubjects[0]}` : "Find Your Mentor"}
+          Find Your Expert
         </h1>
         <div className="w-24 h-2 bg-[#FFD708] mx-auto rounded-full mt-4"></div>
       </div>
 
+      {/* Main Container */}
       <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-[#FFD708]/30 mb-16">
+        
+        {/* Search Input */}
         <div className="flex flex-col md:flex-row gap-6 mb-16">
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Search by teacher name or keyword..."
+              placeholder="Search by name or keyword..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-14 pr-6 py-5 rounded-[2rem] border-4 border-[#FFF7ED] focus:border-[#13A699] focus:outline-none bg-[#FFF7ED]/50 text-[#13A699] text-xl font-bold shadow-inner"
@@ -102,33 +113,88 @@ function SearchContent() {
           </div>
           <button
             onClick={fetchTeachers}
-            className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest hover:-translate-y-1 transform active:scale-95"
+            className="bg-[#13A699] text-white font-black px-12 py-5 rounded-[2rem] hover:bg-[#13A699]/80 transition shadow-xl text-xl uppercase tracking-widest"
           >
-            Refine List
+            Refine Search
           </button>
         </div>
 
+        {/* SUBJECT LIST - DIRECTLY DISPLAYED, NO DROPDOWNS */}
         <div className="pt-8 border-t-4 border-[#FFD708]/5">
-           <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-12 flex items-center gap-4">
+           <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-12 border-l-8 border-[#FFD708] pl-6">
               Select Subjects:
            </h2>
           
-           {/* Direct list display - No more buttons or dropdowns */}
-           <SubjectSelector
-              selectedSubjects={selectedSubjects}
-              onChange={(s) => setSelectedSubjects(s)}
-              mode="multi"
-           />
+           <div className="space-y-12">
+            {SUBJECT_HIERARCHY.map((cat) => (
+              <div key={cat.name} className="border-b-4 border-[#FFD708]/10 pb-12 last:border-b-0">
+                <h3 className="font-black text-[#13A699] text-3xl md:text-4xl uppercase tracking-tighter mb-8 leading-none">
+                  {cat.name}
+                </h3>
+                
+                <div className="grid grid-cols-1 gap-10">
+                  {cat.subcategories.map((sub) => (
+                    <div key={sub.name} className="pl-4 border-l-4 border-[#FFD708]/30">
+                      <h4 className="text-xl md:text-2xl font-black text-[#13A699]/60 uppercase tracking-widest mb-6">
+                        {sub.name}
+                      </h4>
+                      
+                      <div className="space-y-3">
+                        {sub.items.map((item) => {
+                          const isSelected = selectedSubjects.includes(item.name);
+                          return (
+                            <label
+                              key={item.name}
+                              className={`flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 ${
+                                isSelected
+                                  ? "bg-[#13A699] text-white border-[#13A699] shadow-xl scale-[1.01]"
+                                  : "bg-white text-[#13A699] border-[#FFD708]/20 hover:border-[#13A699]/40 hover:bg-[#FFF7ED]"
+                              }`}
+                            >
+                              <span className="text-2xl font-black uppercase tracking-tight">
+                                {item.name}
+                              </span>
+                              
+                              <div className="relative flex items-center">
+                                <input
+                                  type="checkbox"
+                                  className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/50 transition-all checked:bg-white checked:border-white focus:outline-none"
+                                  checked={isSelected}
+                                  onChange={() => toggleSubject(item.name)}
+                                />
+                                <svg
+                                  className="absolute h-7 w-7 pointer-events-none hidden peer-checked:block text-[#13A699] left-1.5"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="6"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
 
            {selectedSubjects.length > 0 && (
-              <div className="mt-12 p-8 bg-[#13A699] rounded-[2.5rem] shadow-2xl animate-in zoom-in duration-300">
+              <div className="mt-12 p-8 bg-[#13A699] rounded-[2.5rem] shadow-2xl">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-white text-xl font-black uppercase tracking-widest">Active Selections:</h3>
+                  <h3 className="text-white text-xl font-black uppercase tracking-widest">Selected:</h3>
                   <button
                     onClick={() => setSelectedSubjects([])}
                     className="text-[#FFD708] text-sm font-black uppercase tracking-widest hover:underline"
                   >
-                    Reset All
+                    Clear All
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -154,7 +220,7 @@ function SearchContent() {
           <div className="text-center py-32 bg-white rounded-[4rem] border-4 border-dashed border-[#FFD708]/30 shadow-inner">
             <div className="text-6xl mb-6 opacity-30">🕵️</div>
             <p className="text-3xl font-black text-[#13A699]/40 uppercase tracking-tighter">
-              No teachers found for this selection yet.
+              No results found for this selection yet.
             </p>
           </div>
         ) : (
@@ -177,7 +243,6 @@ function SearchContent() {
                       <span className="text-lg font-black text-[#FFD708]">{(teacher.rating || 0).toFixed(1)} ★</span>
                       <span className="text-xs text-gray-400 font-black ml-2 uppercase tracking-tighter">({teacher.ratingCount} reviews)</span>
                     </div>
-                    <p className="text-sm font-black text-[#13A699]/50 mt-2 uppercase tracking-widest italic">📍 {teacher.location || "Available"}</p>
                   </div>
                 </div>
 
@@ -205,9 +270,8 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing...</div>}>
+    <Suspense fallback={<div className="text-center py-24 animate-pulse font-black text-4xl text-[#13A699] tracking-tighter uppercase">Initializing Marketplace...</div>}>
       <SearchContent />
     </Suspense>
   );
 }
-// Build trigger: Tue Apr 28 14:02:15 UTC 2026
