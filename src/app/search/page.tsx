@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import SubjectSelector from "@/components/SubjectSelector";
 
@@ -19,20 +20,27 @@ interface Teacher {
   availability: Array<{ dayOfWeek: number; startTime: string; endTime: string }>;
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const initialSubject = searchParams.get("subject");
+  
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initialSubject ? [initialSubject] : []);
   const [locationFilter, setLocationFilter] = useState("");
-  const [showSubjectPicker, setShowSubjectPicker] = useState(false);
+  const [showSubjectPicker, setShowSubjectPicker] = useState(!!initialSubject);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const fetchTeachers = async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
+    
+    // If we have only 1 subject, it acts as a "Landing Page" mode
     if (selectedSubjects.length === 1) params.set("subject", selectedSubjects[0]);
     if (locationFilter) params.set("location", locationFilter);
 
@@ -41,9 +49,10 @@ export default function SearchPage() {
       const data = await res.json();
 
       let filtered = data;
+      // Multi-select filtering
       if (selectedSubjects.length > 1) {
         filtered = data.filter((t: Teacher) =>
-          selectedSubjects.some((s) => t.subjects?.includes(s))
+          selectedSubjects.some((s) => t.subjects?.toLowerCase().includes(s.toLowerCase()))
         );
       }
 
@@ -54,11 +63,9 @@ export default function SearchPage() {
     setLoading(false);
   };
 
-  // Auto-update when subjects change
   useEffect(() => {
     fetchTeachers();
     if (selectedSubjects.length > 0 && resultsRef.current) {
-      // Small delay to allow list to render
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 500);
@@ -80,10 +87,19 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-4xl font-black text-[#13A699] mb-10 uppercase tracking-tight">Discover Teachers</h1>
+      {/* Dynamic Landing Page Heading */}
+      <div className="text-center mb-12">
+        <h1 className="text-5xl font-black text-[#13A699] uppercase tracking-tighter mb-4">
+          {selectedSubjects.length === 1 ? `Experts in ${selectedSubjects[0]}` : "Discover Teachers"}
+        </h1>
+        {selectedSubjects.length === 1 && (
+          <p className="text-[#13A699]/60 text-lg font-bold uppercase tracking-widest">
+            Specialized Coaching Marketplace
+          </p>
+        )}
+      </div>
 
       <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#FFD708]/30 mb-12">
-        {/* Search Row */}
         <div className="flex flex-col md:flex-row gap-6 mb-12">
           <input
             type="text"
@@ -91,13 +107,6 @@ export default function SearchPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 px-6 py-4 rounded-2xl border-2 border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] text-lg font-medium"
-          />
-          <input
-            type="text"
-            placeholder="Location"
-            value={locationFilter}
-            onChange={(e) => setLocationFilter(e.target.value)}
-            className="md:w-64 px-6 py-4 rounded-2xl border-2 border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] text-lg font-medium"
           />
           <button
             onClick={fetchTeachers}
@@ -107,7 +116,6 @@ export default function SearchPage() {
           </button>
         </div>
 
-        {/* Filter Toggle Section */}
         <div className="pt-4 border-t-2 border-[#FFD708]/10">
           <button
             type="button"
@@ -117,12 +125,7 @@ export default function SearchPage() {
             <span className="bg-[#FFD708] text-white w-10 h-10 rounded-full flex items-center justify-center text-xl">
               {showSubjectPicker ? "↑" : "↓"}
             </span>
-            Filter by Subject Category
-            {selectedSubjects.length > 0 && (
-              <span className="bg-[#13A699] text-white text-lg px-4 py-1 rounded-full ml-4 shadow-md">
-                {selectedSubjects.length}
-              </span>
-            )}
+            Explore Subject Categories
           </button>
           
           {showSubjectPicker && (
@@ -157,11 +160,13 @@ export default function SearchPage() {
         {loading ? (
           <div className="text-center py-24">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#13A699] mx-auto"></div>
-            <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Updating Results...</p>
+            <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Filtering Results...</p>
           </div>
         ) : teachers.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-[#FFD708]/40 shadow-sm">
-            <p className="text-2xl font-black text-[#13A699]/40 uppercase tracking-tighter">No teachers found for these filters yet.</p>
+            <p className="text-2xl font-black text-[#13A699]/40 uppercase tracking-tighter">
+              No teachers found for {selectedSubjects.length > 0 ? selectedSubjects.join(", ") : "this category"} yet.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -206,5 +211,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-20 animate-pulse font-black text-[#13A699]">LOADING MARKETPLACE...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 }
