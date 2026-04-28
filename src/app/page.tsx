@@ -24,7 +24,6 @@ export default function Home() {
           Make Your Child <br/> 
           <span className="relative inline-block">
             Skill Independent
-            <div className="absolute -bottom-2 left-0 w-full h-2 bg-[#FFD708] rounded-full"></div>
           </span>
         </h1>
         <p className="text-[#13A699]/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-medium">
@@ -35,20 +34,20 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-5 justify-center">
           <Link
             href="/signup"
-            className="bg-[#13A699] text-white font-bold px-12 py-4 rounded-2xl text-xl hover:shadow-[0_10px_20px_-5px_rgba(19,166,153,0.4)] transition-all transform hover:-translate-y-1"
+            className="bg-[#13A699] text-white font-bold px-12 py-4 rounded-2xl text-xl hover:shadow-[0_10px_20px_-5px_rgba(19,166,153,0.4)] transition-all transform hover:-translate-y-1 no-underline"
           >
             Get Started
           </Link>
           <Link
             href="/search"
-            className="bg-[#FFD708] text-[#13A699] font-bold px-12 py-4 rounded-2xl text-xl hover:shadow-[0_10px_20px_-5px_rgba(255,215,8,0.4)] transition-all transform hover:-translate-y-1"
+            className="bg-[#FFD708] text-[#13A699] font-bold px-12 py-4 rounded-2xl text-xl hover:shadow-[0_10px_20px_-5px_rgba(255,215,8,0.4)] transition-all transform hover:-translate-y-1 no-underline"
           >
             Explore Skills
           </Link>
         </div>
       </div>
 
-      {/* Graphical Step Section - Tiny Icons and Large Words */}
+      {/* Graphical Step Section - Clickable and Scaled Down */}
       <div className="mb-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {[
@@ -83,12 +82,12 @@ export default function Home() {
               )
             }
           ].map((item, i) => (
-            <Link key={i} href={item.link} className="text-center group block p-6 rounded-3xl hover:bg-[#FFD708]/10 transition-colors border border-transparent hover:border-[#FFD708]/30">
+            <Link key={i} href={item.link} className="text-center group block p-4 rounded-3xl hover:bg-[#FFD708]/10 transition-colors no-underline">
               <div className="w-8 h-8 bg-[#FFD708] rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
                 {item.icon}
               </div>
-              <h3 className="text-[#13A699] font-black text-4xl mb-4 tracking-tight uppercase">{item.title}</h3>
-              <p className="text-[#13A699]/60 text-lg leading-relaxed max-w-xs mx-auto font-medium">
+              <h3 className="text-[#13A699] font-black text-4xl mb-6 tracking-tight uppercase no-underline">{item.title}</h3>
+              <p className="text-[#13A699]/60 text-lg leading-relaxed max-w-xs mx-auto font-medium no-underline">
                 {item.desc}
               </p>
             </Link>

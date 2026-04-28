@@ -6,6 +6,14 @@ body {
   background-color: #FFF7ED;
 }
 
+a {
+  text-decoration: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }
