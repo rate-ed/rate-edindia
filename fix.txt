@@ -1,1 +1,1 @@
-activate mandatory checks and slot limits
+: fix highlight and search hang
