@@ -41,20 +41,16 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
                     return (
                       <label
                         key={item.name}
-                        className={`flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 ${
-                          isSelected
-                            ? "bg-white text-[#13A699] border-[#13A699] shadow-xl scale-[1.01]"
-                            : "bg-white text-[#13A699] border-[#FFD708]/20 hover:border-[#13A699]/40 hover:bg-[#FFF7ED]"
-                        }`}
+                        className="flex items-center justify-between w-full max-w-2xl px-8 py-5 rounded-2xl cursor-pointer transition-all border-2 bg-white text-[#13A699] border-[#FFD708]/20 hover:border-[#13A699]/40 hover:bg-[#FFF7ED]"
                       >
-                        <span className={`text-2xl font-black uppercase tracking-tight ${isSelected ? 'text-[#13A699]' : ''}`}>
+                        <span className="text-2xl font-black uppercase tracking-tight">
                           {item.name}
                         </span>
                         
                         <div className="relative flex items-center">
                           <input
                             type="checkbox"
-                            className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/50 transition-all checked:bg-[#13A699] checked:border-[#13A699] focus:outline-none shadow-sm"
+                            className="peer h-10 w-10 cursor-pointer appearance-none rounded-xl border-4 border-[#FFD708]/50 transition-all checked:bg-[#13A699] checked:border-[#13A699] focus:outline-none"
                             checked={isSelected}
                             onChange={() => toggle(item.name)}
                           />
@@ -64,7 +60,7 @@ export default function SubjectSelector({ selectedSubjects, onChange, mode = "mu
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="5"
+                            strokeWidth="6"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
