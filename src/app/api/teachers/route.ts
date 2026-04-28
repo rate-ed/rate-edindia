@@ -9,7 +9,9 @@ export async function GET(req: NextRequest) {
   const location = searchParams.get("location");
   const query = searchParams.get("q");
 
-  const where: any = { approved: true };
+  // Removed the strict approved: true filter so onboarded teachers show up immediately
+  const where: any = {}; 
+  
   if (subject) {
     where.subjects = { contains: subject };
   }
@@ -23,17 +25,22 @@ export async function GET(req: NextRequest) {
       { location: { contains: query } },
       { user: { name: { contains: query } } },
     ];
-    delete where.approved;
-    where.AND = [{ approved: true }];
   }
 
-  const teachers = await prisma.teacherProfile.findMany({
-    where,
-    include: { user: { select: { name: true, email: true, image: true } }, availability: true },
-    orderBy: { rating: "desc" },
-  });
-
-  return NextResponse.json(teachers);
+  try {
+    const teachers = await prisma.teacherProfile.findMany({
+      where,
+      include: { 
+        user: { select: { name: true, email: true, image: true } }, 
+        availability: true 
+      },
+      orderBy: { rating: "desc" },
+    });
+    return NextResponse.json(teachers);
+  } catch (error) {
+    console.error("Search Error:", error);
+    return NextResponse.json({ error: "Failed to fetch teachers" }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest) {
