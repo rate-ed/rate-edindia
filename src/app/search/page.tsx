@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import SubjectSelector from "@/components/SubjectSelector";
+import { SUBJECT_HIERARCHY, getAllSubjects } from "@/lib/subjects";
 
 interface Teacher {
   id: string;
@@ -31,25 +31,24 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(initialSubject ? [initialSubject] : []);
-  const [locationFilter, setLocationFilter] = useState("");
-  const [showSubjectPicker, setShowSubjectPicker] = useState(!!initialSubject);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  const allSubjects = getAllSubjects();
 
   const fetchTeachers = async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
     
-    // If we have only 1 subject, it acts as a "Landing Page" mode
-    if (selectedSubjects.length === 1) params.set("subject", selectedSubjects[0]);
-    if (locationFilter) params.set("location", locationFilter);
+    if (selectedSubjects.length === 1) {
+      params.set("subject", selectedSubjects[0]);
+    }
 
     try {
       const res = await fetch(`/api/teachers?${params}`);
       const data = await res.json();
 
       let filtered = data;
-      // Multi-select filtering
       if (selectedSubjects.length > 1) {
         filtered = data.filter((t: Teacher) =>
           selectedSubjects.some((s) => t.subjects?.toLowerCase().includes(s.toLowerCase()))
@@ -72,6 +71,14 @@ function SearchContent() {
     }
   }, [selectedSubjects]);
 
+  const toggleSubject = (subject: string) => {
+    if (selectedSubjects.includes(subject)) {
+      setSelectedSubjects(selectedSubjects.filter(s => s !== subject));
+    } else {
+      setSelectedSubjects([...selectedSubjects, subject]);
+    }
+  };
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <svg
@@ -87,85 +94,72 @@ function SearchContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Dynamic Landing Page Heading */}
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-black text-[#13A699] uppercase tracking-tighter mb-4">
-          {selectedSubjects.length === 1 ? `Experts in ${selectedSubjects[0]}` : "Discover Teachers"}
+        <h1 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-4">
+          {selectedSubjects.length === 1 ? `Teachers for ${selectedSubjects[0]}` : "Find Your Mentor"}
         </h1>
-        {selectedSubjects.length === 1 && (
-          <p className="text-[#13A699]/60 text-lg font-bold uppercase tracking-widest">
-            Specialized Coaching Marketplace
-          </p>
-        )}
+        <p className="text-[#13A699]/60 text-sm font-bold uppercase tracking-widest">
+          Specialized Coaching Marketplace
+        </p>
       </div>
 
-      <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#FFD708]/30 mb-12">
-        <div className="flex flex-col md:flex-row gap-6 mb-12">
-          <input
-            type="text"
-            placeholder="Search by name, skill, or keyword..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-6 py-4 rounded-2xl border-2 border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-[#FFF7ED] text-[#13A699] text-lg font-medium"
-          />
-          <button
-            onClick={fetchTeachers}
-            className="bg-[#FFD708] text-[#13A699] font-black px-10 py-4 rounded-2xl hover:bg-[#FFD708]/80 transition shadow-lg text-lg uppercase tracking-wider"
-          >
-            Search
-          </button>
+      {/* Persistent Horizontal Subject Filter Row */}
+      <div className="mb-12">
+        <h2 className="text-xl font-black text-[#13A699] uppercase mb-4 px-2">Filter by Subjects:</h2>
+        <div className="bg-white rounded-3xl p-4 shadow-lg border border-[#FFD708]/30 overflow-x-auto no-scrollbar scroll-smooth">
+          <div className="flex gap-4 min-w-max px-2">
+            {allSubjects.map((s) => {
+              const isChecked = selectedSubjects.includes(s);
+              return (
+                <label 
+                  key={s} 
+                  className={`flex items-center gap-3 px-6 py-3 rounded-2xl cursor-pointer transition-all border-2 ${
+                    isChecked 
+                    ? "bg-[#13A699] text-white border-[#13A699] shadow-md scale-105" 
+                    : "bg-[#FFF7ED] text-[#13A699] border-[#FFD708]/30 hover:border-[#13A699]/50"
+                  }`}
+                >
+                  <input 
+                    type="checkbox" 
+                    className="w-5 h-5 rounded border-[#FFD708] text-[#13A699] focus:ring-[#13A699]"
+                    checked={isChecked}
+                    onChange={() => toggleSubject(s)}
+                  />
+                  <span className="font-bold text-lg whitespace-nowrap uppercase tracking-tight">{s}</span>
+                </label>
+              );
+            })}
+          </div>
         </div>
+        <p className="text-[10px] text-gray-400 mt-2 px-2 uppercase font-bold tracking-widest">← Scroll left/right to see more subjects →</p>
+      </div>
 
-        <div className="pt-4 border-t-2 border-[#FFD708]/10">
-          <button
-            type="button"
-            onClick={() => setShowSubjectPicker(!showSubjectPicker)}
-            className="text-[#13A699] text-3xl font-black uppercase tracking-tighter hover:underline flex items-center gap-3 transition-all"
-          >
-            <span className="bg-[#FFD708] text-white w-10 h-10 rounded-full flex items-center justify-center text-xl">
-              {showSubjectPicker ? "↑" : "↓"}
-            </span>
-            Explore Subject Categories
-          </button>
-          
-          {showSubjectPicker && (
-            <div className="mt-10">
-              <SubjectSelector
-                selectedSubjects={selectedSubjects}
-                onChange={(s) => setSelectedSubjects(s)}
-                mode="multi"
-              />
-              {selectedSubjects.length > 0 && (
-                <div className="mt-8 flex flex-wrap gap-2 p-6 bg-[#FFF7ED]/30 rounded-2xl border border-[#FFD708]/20">
-                  {selectedSubjects.map((s) => (
-                    <span key={s} className="bg-[#13A699] text-white text-sm px-4 py-2 rounded-full flex items-center gap-2 font-bold shadow-sm">
-                      {s}
-                      <button onClick={() => setSelectedSubjects(selectedSubjects.filter((x) => x !== s))} className="hover:text-red-300 font-black text-lg">×</button>
-                    </span>
-                  ))}
-                  <button
-                    onClick={() => { setSelectedSubjects([]); fetchTeachers(); }}
-                    className="text-sm font-black text-red-500 hover:text-red-700 ml-4 uppercase tracking-widest underline"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col md:flex-row gap-4 mb-12">
+        <input
+          type="text"
+          placeholder="Search by name or keyword..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 px-6 py-4 rounded-2xl border-2 border-[#FFD708]/30 focus:outline-none focus:border-[#13A699] bg-white text-[#13A699] text-lg font-bold"
+        />
+        <button
+          onClick={fetchTeachers}
+          className="bg-[#FFD708] text-[#13A699] font-black px-12 py-4 rounded-2xl hover:bg-[#FFD708]/80 transition shadow-lg text-lg uppercase"
+        >
+          Search
+        </button>
       </div>
 
       <div ref={resultsRef} className="scroll-mt-32">
         {loading ? (
           <div className="text-center py-24">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#13A699] mx-auto"></div>
-            <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Filtering Results...</p>
+            <p className="mt-6 text-[#13A699] font-black uppercase tracking-widest animate-pulse">Updating Marketplace...</p>
           </div>
         ) : teachers.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-[3rem] border-2 border-dashed border-[#FFD708]/40 shadow-sm">
+          <div className="text-center py-24 bg-white rounded-[3.5rem] border-2 border-dashed border-[#FFD708]/40 shadow-sm">
             <p className="text-2xl font-black text-[#13A699]/40 uppercase tracking-tighter">
-              No teachers found for {selectedSubjects.length > 0 ? selectedSubjects.join(", ") : "this category"} yet.
+              No teachers found for {selectedSubjects.length > 0 ? selectedSubjects.join(", ") : "this selection"}.
             </p>
           </div>
         ) : (
@@ -188,7 +182,7 @@ function SearchContent() {
                       {renderStars(teacher.rating)}
                       <span className="text-xs text-gray-400 font-bold ml-1 uppercase">({teacher.ratingCount} reviews)</span>
                     </div>
-                    <p className="text-sm font-bold text-[#13A699]/60 mt-1 uppercase tracking-wider italic">📍 {teacher.location || "Online"}</p>
+                    <p className="text-sm font-bold text-[#13A699]/60 mt-1 uppercase tracking-wider italic">📍 {teacher.location || "Available"}</p>
                   </div>
                 </div>
 
