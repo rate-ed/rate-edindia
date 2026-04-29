@@ -6,41 +6,31 @@ import { authOptions } from "@/lib/auth";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const subject = searchParams.get("subject");
-  const location = searchParams.get("location");
-  const query = searchParams.get("q");
-
-  // Fetch all teachers to allow robust client-side filtering if needed,
-  // but we'll still apply basic filters here.
-  const where: any = {}; 
-  
-  if (subject) {
-    where.subjects = { contains: subject, mode: 'insensitive' };
-  }
-  if (location) {
-    where.location = { contains: location, mode: 'insensitive' };
-  }
-  if (query) {
-    where.OR = [
-      { subjects: { contains: query, mode: 'insensitive' } },
-      { bio: { contains: query, mode: 'insensitive' } },
-      { location: { contains: query, mode: 'insensitive' } },
-      { user: { name: { contains: query, mode: 'insensitive' } } },
-    ];
-  }
 
   try {
+    // Fetch ALL profiles to ensure nothing is missed by DB filters
     const teachers = await prisma.teacherProfile.findMany({
-      where,
       include: { 
         user: { select: { name: true, email: true, image: true } }, 
         availability: true 
-      },
-      orderBy: { rating: "desc" },
+      }
     });
+
+    // If a subject is requested, filter it here with extreme tolerance
+    if (subject) {
+      const lowerSub = subject.toLowerCase().trim();
+      const filtered = teachers.filter(t => {
+        if (!t.subjects) return false;
+        const list = t.subjects.toLowerCase();
+        return list.includes(lowerSub);
+      });
+      return NextResponse.json(filtered);
+    }
+
     return NextResponse.json(teachers);
   } catch (error) {
-    console.error("Search Error:", error);
-    return NextResponse.json({ error: "Failed to fetch teachers" }, { status: 500 });
+    console.error("API_ERROR:", error);
+    return NextResponse.json({ error: "Database Connection Failed" }, { status: 500 });
   }
 }
 
