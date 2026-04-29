@@ -1,1 +1,1 @@
- activate reloaded search v1.0.6
+activate version 2.0 ultimate
