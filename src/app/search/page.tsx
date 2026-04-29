@@ -1,23 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import SubjectSelector from "@/components/SubjectSelector";
-
-interface Teacher {
-  id: string;
-  bio: string | null;
-  subjects: string | null;
-  fees: number | null;
-  rating: number;
-  ratingCount: number;
-  user: { name: string | null; email: string };
-}
+import { SUBJECT_HIERARCHY } from "@/lib/subjects";
 
 export default function SearchPage() {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const resultsRef = useRef(null);
 
   useEffect(() => {
     async function load() {
@@ -25,73 +15,77 @@ export default function SearchPage() {
       try {
         const res = await fetch("/api/teachers");
         const all = await res.json();
-        
         if (selectedSubjects.length === 0) {
           setTeachers(all);
         } else {
-          const filtered = all.filter((t: Teacher) => {
-            if (!t.subjects) return false;
-            const tSub = t.subjects.toLowerCase();
-            return selectedSubjects.some(s => tSub.includes(s.toLowerCase().trim()));
-          });
-          setTeachers(filtered);
+          setTeachers(all.filter(t => 
+            selectedSubjects.some(s => t.subjects?.toLowerCase().includes(s.toLowerCase().trim()))
+          ));
         }
       } catch (e) { console.error(e); }
       setLoading(false);
     }
     load();
-    
-    // Auto-scroll when filter applied
-    if (selectedSubjects.length > 0 && resultsRef.current) {
-      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 500);
+    if (selectedSubjects.length > 0) {
+       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 400);
     }
   }, [selectedSubjects]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-10">
       <div className="text-center mb-16">
-        <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4">Find Your Expert</h1>
-        <p className="text-[#FFD708] font-black uppercase tracking-widest text-lg bg-[#13A699] inline-block px-4 py-1 rounded">V1.0.6 RELOADED</p>
+        <h1 className="text-5xl font-black text-[#13A699] uppercase tracking-tighter">Marketplace v2.0</h1>
+        <p className="text-[#FFD708] font-bold uppercase tracking-widest mt-2">Find your skill mentor</p>
       </div>
 
-      <div className="bg-white rounded-[4rem] p-12 shadow-2xl border-4 border-[#FFD708]/20 mb-20">
-        <h2 className="text-4xl font-black text-[#13A699] uppercase mb-12 flex items-center gap-4">
-          <span className="w-6 h-6 bg-[#FFD708] rounded-full"></span>
-          Select Subjects:
-        </h2>
-        <SubjectSelector selectedSubjects={selectedSubjects} onChange={setSelectedSubjects} />
+      {/* FULL LIST DISPLAY - NO DROPDOWNS */}
+      <div className="space-y-12 mb-20 bg-white p-10 rounded-[3rem] shadow-2xl border-4 border-[#FFD708]/10">
+        {SUBJECT_HIERARCHY.map(cat => (
+          <div key={cat.name} className="border-b-2 border-gray-100 pb-10 last:border-0">
+            <h2 className="text-3xl font-black text-[#13A699] uppercase mb-8 border-l-8 border-[#FFD708] pl-4">{cat.name}</h2>
+            {cat.subcategories.map(sub => (
+              <div key={sub.name} className="ml-4 mb-6">
+                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">{sub.name}</h3>
+                <div className="space-y-3">
+                  {sub.items.map(item => (
+                    <label key={item.name} className="flex items-center justify-between p-5 rounded-2xl border-2 border-gray-50 hover:bg-[#FFF7ED] cursor-pointer group">
+                      <span className="text-xl font-bold text-[#13A699] uppercase">{item.name}</span>
+                      <input 
+                        type="checkbox" 
+                        className="w-8 h-8 rounded-lg border-2 border-[#FFD708] text-[#13A699] focus:ring-0" 
+                        checked={selectedSubjects.includes(item.name)}
+                        onChange={() => {
+                          if (selectedSubjects.includes(item.name)) {
+                            setSelectedSubjects(selectedSubjects.filter(x => x !== item.name));
+                          } else {
+                            setSelectedSubjects([...selectedSubjects, item.name]);
+                          }
+                        }}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
 
       <div ref={resultsRef} className="scroll-mt-32">
-        <div className="mb-12 flex justify-between items-center border-b-8 border-[#13A699]/10 pb-6">
-           <h2 className="text-4xl font-black text-[#13A699] uppercase">Available Mentors</h2>
-           <p className="text-[#13A699] font-black text-xl uppercase bg-[#FFD708] px-8 py-3 rounded-full">Found: {teachers.length}</p>
+        <h2 className="text-3xl font-black text-[#13A699] uppercase mb-10">Available Teachers ({teachers.length})</h2>
+        <div className="grid grid-cols-1 gap-8">
+          {teachers.map(t => (
+            <Link href={`/book/${t.id}`} key={t.id} className="bg-white p-8 rounded-[2.5rem] shadow-xl border-2 border-[#FFD708]/10 no-underline flex items-center gap-8 hover:scale-[1.02] transition-all">
+              <div className="w-24 h-24 bg-[#FFD708]/20 rounded-full flex items-center justify-center text-4xl">🧑‍🏫</div>
+              <div>
+                <h3 className="text-3xl font-black text-black uppercase">{t.user.name || "Expert"}</h3>
+                <p className="text-[#13A699] font-bold text-lg">{t.bio}</p>
+                <p className="text-[#FFD708] font-black mt-2 text-2xl">₹{t.fees || 500}/hr</p>
+              </div>
+            </Link>
+          ))}
+          {teachers.length === 0 && <p className="text-center py-20 text-2xl font-black text-gray-300 uppercase">No teachers found in this selection.</p>}
         </div>
-
-        {loading ? (
-          <div className="text-center py-24 animate-pulse">
-            <div className="w-24 h-24 border-t-8 border-[#13A699] rounded-full animate-spin mx-auto"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {teachers.map(t => (
-              <Link href={`/book/${t.id}`} key={t.id} className="bg-white rounded-[3.5rem] p-10 shadow-2xl border-2 border-[#FFD708]/10 hover:scale-[1.03] transition-all flex flex-col no-underline group">
-                <h3 className="font-black text-4xl text-black uppercase mb-2 leading-none group-hover:text-[#13A699]">{t.user.name || 'Expert'}</h3>
-                <p className="text-sm font-black text-[#FFD708] uppercase tracking-[0.2em] mb-6">Certified Teacher</p>
-                <p className="text-gray-500 text-xl font-bold line-clamp-3 mb-10">{t.bio || "No bio available."}</p>
-                <div className="mt-auto pt-8 border-t-4 border-[#FFF7ED] flex justify-between items-center">
-                   <span className="text-4xl font-black text-black">₹{t.fees || 500}</span>
-                   <div className="bg-[#13A699] text-white font-black px-10 py-4 rounded-3xl uppercase text-lg shadow-xl">Book</div>
-                </div>
-              </Link>
-            ))}
-            {teachers.length === 0 && (
-               <div className="col-span-full py-24 text-center bg-[#FFF7ED] rounded-[4rem] border-4 border-dashed border-[#FFD708]">
-                  <p className="text-4xl font-black text-[#13A699]/20 uppercase">No teachers found in this selection.</p>
-               </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
