@@ -1,130 +1,98 @@
 "use client";
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import SubjectSelector from "@/components/SubjectSelector";
 
 interface Teacher {
   id: string;
   bio: string | null;
-  qualifications: string | null;
-  experience: number | null;
+  subjects: string | null;
   fees: number | null;
   rating: number;
   ratingCount: number;
-  subjects: string | null;
-  location: string;
-  photo: string | null;
-  user: { name: string | null; email: string; image: string | null };
+  user: { name: string | null; email: string };
 }
 
-function SearchContent() {
-  const { data: session } = useSession();
-  const searchParams = useSearchParams();
-  const resultsRef = useRef<HTMLDivElement>(null);
-  
+export default function SearchPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-
-  const fetchTeachers = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/teachers`);
-      const allTeachers = await res.json();
-      
-      if (selectedSubjects.length === 0) {
-        setTeachers(allTeachers);
-      } else {
-        // Multi-subject OR filter
-        const filtered = allTeachers.filter((t: Teacher) => {
-          if (!t.subjects) return false;
-          const tSubLower = t.subjects.toLowerCase();
-          return selectedSubjects.some(s => tSubLower.includes(s.toLowerCase().trim()));
-        });
-        setTeachers(filtered);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
-  };
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchTeachers();
+    async function load() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/teachers");
+        const all = await res.json();
+        
+        if (selectedSubjects.length === 0) {
+          setTeachers(all);
+        } else {
+          const filtered = all.filter((t: Teacher) => {
+            if (!t.subjects) return false;
+            const tSub = t.subjects.toLowerCase();
+            return selectedSubjects.some(s => tSub.includes(s.toLowerCase().trim()));
+          });
+          setTeachers(filtered);
+        }
+      } catch (e) { console.error(e); }
+      setLoading(false);
+    }
+    load();
+    
+    // Auto-scroll when filter applied
     if (selectedSubjects.length > 0 && resultsRef.current) {
-      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 300);
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 500);
     }
   }, [selectedSubjects]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="text-center mb-16">
-        <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4 leading-none">
-          Marketplace
-        </h1>
-        <p className="text-[#FFD708] font-bold uppercase tracking-widest text-sm">Version 1.0.5 Live</p>
+        <h1 className="text-6xl font-black text-[#13A699] uppercase tracking-tighter mb-4">Find Your Expert</h1>
+        <p className="text-[#FFD708] font-black uppercase tracking-widest text-lg bg-[#13A699] inline-block px-4 py-1 rounded">V1.0.6 RELOADED</p>
       </div>
 
-      <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-[#FFD708]/30 mb-16">
-        <h2 className="text-4xl font-black text-[#13A699] uppercase tracking-tighter mb-10 border-l-8 border-[#FFD708] pl-6">
-          Subject Categories
+      <div className="bg-white rounded-[4rem] p-12 shadow-2xl border-4 border-[#FFD708]/20 mb-20">
+        <h2 className="text-4xl font-black text-[#13A699] uppercase mb-12 flex items-center gap-4">
+          <span className="w-6 h-6 bg-[#FFD708] rounded-full"></span>
+          Select Subjects:
         </h2>
         <SubjectSelector selectedSubjects={selectedSubjects} onChange={setSelectedSubjects} />
       </div>
 
       <div ref={resultsRef} className="scroll-mt-32">
-        <div className="flex justify-between items-center mb-10">
-           <h2 className="text-3xl font-black text-[#13A699] uppercase tracking-tight">Available Teachers</h2>
-           <p className="bg-[#13A699] text-white px-6 py-2 rounded-full font-black text-sm uppercase">
-             Matches: {teachers.length}
-           </p>
+        <div className="mb-12 flex justify-between items-center border-b-8 border-[#13A699]/10 pb-6">
+           <h2 className="text-4xl font-black text-[#13A699] uppercase">Available Mentors</h2>
+           <p className="text-[#13A699] font-black text-xl uppercase bg-[#FFD708] px-8 py-3 rounded-full">Found: {teachers.length}</p>
         </div>
 
         {loading ? (
-          <div className="text-center py-20">
-             <div className="animate-spin rounded-full h-16 w-16 border-t-8 border-b-8 border-[#13A699] mx-auto"></div>
-          </div>
-        ) : teachers.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-[#FFD708]/30">
-            <p className="text-2xl font-black text-[#13A699]/30 uppercase">No teachers found for this selection yet.</p>
+          <div className="text-center py-24 animate-pulse">
+            <div className="w-24 h-24 border-t-8 border-[#13A699] rounded-full animate-spin mx-auto"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {teachers.map((t) => (
-              <Link href={`/book/${t.id}`} key={t.id} className="bg-white rounded-[3rem] p-8 shadow-xl border border-[#FFD708]/10 hover:border-[#13A699]/40 transition-all flex flex-col no-underline group">
-                <div className="flex items-center gap-6 mb-6">
-                  <div className="w-20 h-20 bg-[#FFD708]/20 rounded-full flex items-center justify-center overflow-hidden border-4 border-[#FFD708]/30">
-                    {t.photo ? <img src={t.photo} className="w-full h-full object-cover" /> : <span className="text-3xl font-black text-[#13A699]">{t.user.name?.[0] || 'T'}</span>}
-                  </div>
-                  <div>
-                    <h3 className="font-black text-2xl text-black uppercase">{t.user.name || 'Teacher'}</h3>
-                    <p className="text-sm font-bold text-[#FFD708]">Expert Mentor</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 font-medium mb-8 line-clamp-3 no-underline">{t.bio}</p>
-                <div className="mt-auto pt-6 border-t-2 border-[#FFD708]/5 flex justify-between items-center">
-                  <span className="text-2xl font-black text-black">₹{t.fees || 500}</span>
-                  <div className="bg-[#FFD708] text-[#13A699] font-black px-6 py-2 rounded-2xl uppercase text-sm shadow-md">Book Demo</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {teachers.map(t => (
+              <Link href={`/book/${t.id}`} key={t.id} className="bg-white rounded-[3.5rem] p-10 shadow-2xl border-2 border-[#FFD708]/10 hover:scale-[1.03] transition-all flex flex-col no-underline group">
+                <h3 className="font-black text-4xl text-black uppercase mb-2 leading-none group-hover:text-[#13A699]">{t.user.name || 'Expert'}</h3>
+                <p className="text-sm font-black text-[#FFD708] uppercase tracking-[0.2em] mb-6">Certified Teacher</p>
+                <p className="text-gray-500 text-xl font-bold line-clamp-3 mb-10">{t.bio || "No bio available."}</p>
+                <div className="mt-auto pt-8 border-t-4 border-[#FFF7ED] flex justify-between items-center">
+                   <span className="text-4xl font-black text-black">₹{t.fees || 500}</span>
+                   <div className="bg-[#13A699] text-white font-black px-10 py-4 rounded-3xl uppercase text-lg shadow-xl">Book</div>
                 </div>
               </Link>
             ))}
+            {teachers.length === 0 && (
+               <div className="col-span-full py-24 text-center bg-[#FFF7ED] rounded-[4rem] border-4 border-dashed border-[#FFD708]">
+                  <p className="text-4xl font-black text-[#13A699]/20 uppercase">No teachers found in this selection.</p>
+               </div>
+            )}
           </div>
         )}
       </div>
-      
-      <div className="text-center mt-20 text-[10px] text-gray-300 font-bold uppercase tracking-widest">
-        Permanent Global Deployment Active
-      </div>
     </div>
-  );
-}
-
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<div className="text-center py-20 font-black text-[#13A699]">CONNECTING...</div>}>
-      <SearchContent />
-    </Suspense>
   );
 }
