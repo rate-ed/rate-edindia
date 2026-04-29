@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
   const location = searchParams.get("location");
   const query = searchParams.get("q");
 
+  // Fetch all teachers to allow robust client-side filtering if needed,
+  // but we'll still apply basic filters here.
   const where: any = {}; 
   
   if (subject) {
