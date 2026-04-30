@@ -1,1 +1,1 @@
-activate version 0.2.6 clean ui
+activate stable v1.0.0
