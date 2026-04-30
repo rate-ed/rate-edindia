@@ -3,7 +3,7 @@ import { SUBJECT_HIERARCHY } from "@/lib/subjects";
 
 interface SubjectSelectorProps {
   selectedSubjects: string[];
-  onChange: (subjects: string[]) => void;
+  onChange: (subjects: string[]) => void; mode?: string;
 }
 
 export default function SubjectSelector({ selectedSubjects, onChange }: SubjectSelectorProps) {
